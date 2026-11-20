@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <line x1="44" y1="422" x2="468" y2="422" stroke="#d8d8d8" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 276.7 410.8 Q 316.4 381.0 362.4 337.2 Q 362.0 319.9 345.6 314.8 Q 290.8 347.2 251.3 377.2 Q 251.9 403.1 276.7 410.8 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="314.7" y1="377.0" x2="294.3" y2="349.8" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 343.4 334.4 Q 369.8 369.4 409.3 409.3 Q 419.8 408.8 422.7 398.7 Q 392.7 351.2 364.6 317.6 Q 348.0 318.4 343.4 334.4 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 421.1 410.8 Q 431.8 403.1 443.9 391.2 Q 443.7 383.2 436.1 380.8 Q 421.3 389.0 410.9 397.2 Q 411.1 407.7 421.1 410.8 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 147.6 405.3 Q 165.7 412.5 190.7 416.0 Q 201.2 408.4 197.3 396.0 Q 175.3 383.8 156.4 378.7 Q 142.4 388.8 147.6 405.3 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 192.8 415.9 Q 213.8 419.0 241.1 419.1 Q 247.1 412.6 242.9 404.9 Q 216.4 398.3 195.2 396.1 Q 186.9 405.1 192.8 415.9 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 242.0 419.0 Q 251.7 418.5 264.0 417.5 Q 268.0 412.0 264.0 406.5 Q 251.7 405.5 242.0 405.0 Q 237.0 412.0 242.0 419.0 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="4.7" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 153.8 381.1 Q 140.1 378.9 122.4 376.9 Q 113.7 385.6 119.2 396.7 Q 136.5 400.5 150.2 402.9 Q 159.8 393.3 153.8 381.1 Z" fill="#060606" stroke="#ffffff" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="104.0" cy="384.0" rx="21" ry="25" transform="rotate(-80.5 104.0 384.0)" fill="#060606" stroke="#ffffff" stroke-width="6.5"/>
+  <path d="M 264.4 370.0 Q 224.0 372.6 181.6 364.4 L 152.4 369.1 Q 142.0 391.8 151.6 414.9 L 180.7 417.9 Q 223.3 413.9 263.6 418.0 Q 278.0 394.2 264.4 370.0 Z" fill="#060606" stroke="#ffffff" stroke-width="6.5" stroke-linejoin="round"/>
+  <path d="M 264.4 370.0 L 237.5 371.9 L 236.7 415.1 L 263.6 418.0 Q 278.0 394.2 264.4 370.0 Z" fill="#1c1c1c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round"/>
+  <line x1="248.7" y1="370.7" x2="247.9" y2="416.8" stroke="#ffffff" stroke-width="3.2"/>
+  <path d="M 181.4 375.0 Q 191.2 386.8 181.0 396.6" fill="none" stroke="#d8d8d8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 279.4 408.2 Q 311.3 374.1 346.3 325.5 Q 342.8 308.6 325.7 306.5 Q 280.1 345.3 248.6 379.8 Q 253.7 405.1 279.4 408.2 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="308.9" y1="370.4" x2="283.9" y2="347.4" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 322.8 318.9 Q 330.5 358.8 347.7 407.8 Q 357.3 412.0 364.3 404.2 Q 359.1 352.4 349.2 313.1 Q 333.9 306.5 322.8 318.9 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 354.6 414.4 Q 370.4 417.3 390.9 418.4 Q 396.6 412.8 393.1 405.6 Q 373.3 400.0 357.4 397.6 Q 350.0 405.0 354.6 414.4 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 147.9 405.4 Q 167.8 412.6 194.9 416.0 Q 205.2 408.2 201.1 396.0 Q 176.6 383.7 156.1 378.6 Q 142.4 389.1 147.9 405.4 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 196.9 415.9 Q 220.6 419.0 251.2 419.2 Q 257.2 412.6 252.8 404.8 Q 222.9 398.3 199.1 396.1 Q 190.8 405.2 196.9 415.9 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 252.0 419.0 Q 261.7 418.5 274.0 417.5 Q 278.0 412.0 274.0 406.5 Q 261.7 405.5 252.0 405.0 Q 247.0 412.0 252.0 419.0 Z" fill="#060606" stroke="#ffffff" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="255.0" y1="348.0" x2="255.0" y2="296.0" stroke="#d8d8d8" stroke-width="3.8" stroke-dasharray="6 5" stroke-linecap="round"/>
+  <polyline points="263.0,309.0 255.0,296.0 247.0,309.0" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

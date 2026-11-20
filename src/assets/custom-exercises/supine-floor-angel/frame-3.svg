@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect x="116" y="42" width="280" height="428" rx="18" fill="none" stroke="#d8d8d8" stroke-width="2.5" stroke-dasharray="6 6" opacity="0.45"/>
+  <path d="M 213.7 298.6 Q 205.6 328.5 202.5 368.4 Q 213.4 381.7 229.5 375.6 Q 246.6 339.3 254.3 309.4 Q 237.9 289.4 213.7 298.6 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="209.5" y1="330.2" x2="242.3" y2="339.0" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 202.6 373.3 Q 204.1 400.7 213.5 434.8 Q 222.6 440.1 230.5 433.2 Q 233.2 397.9 229.4 370.7 Q 215.1 362.3 202.6 373.3 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 215.6 428.4 Q 208.4 436.1 201.1 447.7 Q 202.9 455.5 210.9 456.3 Q 221.5 447.8 228.4 439.6 Q 226.1 429.4 215.6 428.4 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 257.7 309.4 Q 265.4 339.3 282.5 375.6 Q 298.6 381.7 309.5 368.4 Q 306.4 328.5 298.3 298.6 Q 274.1 289.4 257.7 309.4 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="269.7" y1="339.0" x2="302.5" y2="330.2" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 282.6 370.7 Q 278.8 397.9 281.5 433.2 Q 289.4 440.1 298.5 434.8 Q 307.9 400.7 309.4 373.3 Q 296.9 362.3 282.6 370.7 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 283.6 439.6 Q 290.5 447.8 301.1 456.3 Q 309.1 455.5 310.9 447.7 Q 303.6 436.1 296.4 428.4 Q 285.9 429.4 283.6 439.6 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 267.0 158.0 Q 266.9 143.1 266.0 124.2 Q 256.0 117.0 246.0 124.2 Q 245.1 143.1 245.0 158.0 Q 256.0 165.9 267.0 158.0 Z" fill="#060606" stroke="#ffffff" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="256.0" cy="106.0" rx="24" ry="28" transform="rotate(0.0 256.0 106.0)" fill="#060606" stroke="#ffffff" stroke-width="6.5"/>
+  <path d="M 288.0 304.0 Q 283.5 256.5 303.8 206.3 L 295.1 172.0 Q 256.0 162.0 216.9 172.0 L 212.8 206.3 Q 228.5 256.5 224.0 304.0 Q 256.0 318.0 288.0 304.0 Z" fill="#060606" stroke="#ffffff" stroke-width="6.5" stroke-linejoin="round"/>
+  <path d="M 288.0 304.0 L 284.8 272.3 L 227.2 272.3 L 224.0 304.0 Q 256.0 318.0 288.0 304.0 Z" fill="#1c1c1c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round"/>
+  <line x1="286.7" y1="285.5" x2="225.3" y2="285.5" stroke="#ffffff" stroke-width="3.2"/>
+  <path d="M 285.9 206.3 Q 266.1 218.0 249.1 206.3" fill="none" stroke="#d8d8d8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 226.1 206.3 Q 245.9 218.0 262.9 206.3" fill="none" stroke="#d8d8d8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="256.0" y1="259.1" x2="256.0" y2="224.8" stroke="#d8d8d8" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M 222.4 168.6 Q 206.5 149.4 181.8 129.0 Q 168.9 130.4 166.2 143.0 Q 184.1 169.7 201.6 187.4 Q 218.8 185.5 222.4 168.6 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 183.7 138.3 Q 190.3 112.0 195.0 77.6 Q 189.2 71.0 181.0 74.4 Q 170.0 107.2 164.3 133.7 Q 172.4 143.0 183.7 138.3 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="188.0" cy="76.0" r="7.5" fill="#060606" stroke="#ffffff" stroke-width="5.5"/>
+  <path d="M 310.4 187.4 Q 327.9 169.7 345.8 143.0 Q 343.1 130.4 330.2 129.0 Q 305.5 149.4 289.6 168.6 Q 293.2 185.5 310.4 187.4 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 347.7 133.7 Q 342.0 107.2 331.0 74.4 Q 322.8 71.0 317.0 77.6 Q 321.7 112.0 328.3 138.3 Q 339.6 143.0 347.7 133.7 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="324.0" cy="76.0" r="7.5" fill="#060606" stroke="#ffffff" stroke-width="5.5"/>
+  <path d="M 374.0 102.0 Q 382.0 152.0 372.0 196.0" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-dasharray="6 5" stroke-linecap="round"/>
+  <polyline points="367.1,181.6 372.0,196.0 382.7,185.1" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

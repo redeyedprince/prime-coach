@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <line x1="44" y1="422" x2="468" y2="422" stroke="#d8d8d8" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 326.2 292.2 Q 329.4 320.5 339.6 355.6 Q 351.2 361.5 360.4 352.4 Q 359.4 315.8 353.8 287.8 Q 338.4 280.0 326.2 292.2 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 340.0 354.0 Q 339.6 379.5 342.8 412.0 Q 350.0 417.2 357.2 412.0 Q 360.4 379.5 360.0 354.0 Q 350.0 346.8 340.0 354.0 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 349.2 419.0 Q 357.2 419.3 367.4 419.5 Q 371.9 414.4 368.6 408.5 Q 358.6 406.4 350.8 405.0 Q 345.0 411.4 349.2 419.0 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="4.7" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 203.0 294.7 Q 204.6 344.9 214.0 408.5 Q 228.4 418.1 242.0 407.5 Q 246.9 343.4 245.0 293.3 Q 223.5 278.9 203.0 294.7 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="208.8" y1="345.9" x2="242.8" y2="344.7" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 227.2 394.5 Q 196.4 395.1 157.5 403.5 Q 151.9 412.3 158.5 420.5 Q 198.0 424.4 228.8 421.5 Q 237.7 407.4 227.2 394.5 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 161.8 404.4 Q 153.1 399.7 140.9 396.2 Q 133.8 399.9 135.1 407.8 Q 145.3 415.5 154.2 419.6 Q 163.5 414.7 161.8 404.4 Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="5.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 342.9 300.6 Q 357.7 296.5 376.4 290.6 Q 380.8 279.0 371.2 271.2 Q 352.0 275.5 337.1 279.4 Q 332.4 292.1 342.9 300.6 Z" fill="#060606" stroke="#ffffff" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <ellipse cx="392.0" cy="276.0" rx="21" ry="24" transform="rotate(74.9 392.0 276.0)" fill="#060606" stroke="#ffffff" stroke-width="6.5"/>
+  <path d="M 224.8 317.0 Q 266.4 312.3 310.8 318.1 L 340.8 312.1 Q 350.0 289.7 339.2 267.9 L 309.0 266.6 Q 265.1 272.8 223.2 271.0 Q 210.0 294.5 224.8 317.0 Z" fill="#060606" stroke="#ffffff" stroke-width="6.5" stroke-linejoin="round"/>
+  <path d="M 224.8 317.0 L 252.6 313.7 L 251.1 272.4 L 223.2 271.0 Q 210.0 294.5 224.8 317.0 Z" fill="#1c1c1c" stroke="#ffffff" stroke-width="5.2" stroke-linejoin="round"/>
+  <line x1="241.0" y1="315.5" x2="239.5" y2="271.4" stroke="#ffffff" stroke-width="3.2"/>
+  <path d="M 310.4 307.9 Q 299.7 297.1 309.7 287.1" fill="none" stroke="#d8d8d8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 326.0 289.1 Q 323.1 317.2 325.5 353.3 Q 335.5 361.5 346.5 354.7 Q 353.4 319.1 354.0 290.9 Q 340.6 279.9 326.0 289.1 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 326.0 354.0 Q 325.6 379.5 328.8 412.0 Q 336.0 417.2 343.2 412.0 Q 346.4 379.5 346.0 354.0 Q 336.0 346.8 326.0 354.0 Z" fill="#060606" stroke="#ffffff" stroke-width="6.0" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 335.2 419.0 Q 343.2 419.3 353.4 419.5 Q 357.9 414.4 354.6 408.5 Q 344.6 406.4 336.8 405.0 Q 331.0 411.4 335.2 419.0 Z" fill="#060606" stroke="#ffffff" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 209.2 279.2 Q 182.6 305.4 154.1 344.1 Q 156.9 361.1 173.9 363.9 Q 212.6 335.4 238.8 308.8 Q 234.7 283.3 209.2 279.2 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="185.0" y1="309.0" x2="209.0" y2="333.0" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M 153.8 345.2 Q 130.9 370.0 107.6 406.5 Q 110.0 416.6 120.4 417.5 Q 153.1 389.1 174.2 362.8 Q 170.3 346.6 153.8 345.2 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 112.2 403.7 Q 104.2 405.2 94.6 409.7 Q 91.4 417.0 97.4 422.3 Q 108.0 422.4 115.8 420.3 Q 120.0 410.7 112.2 403.7 Z" fill="#060606" stroke="#ffffff" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 122.0 362.0 Q 102.0 260.0 156.0 232.0" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-dasharray="6 5" stroke-linecap="round"/>
+  <polyline points="148.1,245.1 156.0,232.0 140.8,230.9" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

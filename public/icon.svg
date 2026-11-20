@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="primeV2Bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#042f2e"/>
+      <stop offset="52%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+    <linearGradient id="primeV2Lock" x1="220" y1="110" x2="395" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ccfbf1"/>
+      <stop offset="55%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="primeV2Pillar" x1="130" y1="80" x2="210" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="primeV2Obsidian" x1="230" y1="344" x2="318" y2="386" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#050a0e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#primeV2Bg)"/>
+  <rect x="20" y="20" width="472" height="472" rx="96" stroke="#ffffff" stroke-opacity="0.1" stroke-width="3"/>
+  <!-- Tall Split-Crown Vertical Monolith Pillar -->
+  <path d="M134 416 L134 114 L168 80 L206 114 L206 416 Z" fill="url(#primeV2Pillar)"/>
+  <!-- Bright Aqua-Platinum Chamfered Upper Lock -->
+  <path d="M230 118 L342 118 L392 168 L392 262 L342 312 L230 312 L230 248 L314 248 L328 234 L328 196 L314 182 L230 182 Z" fill="url(#primeV2Lock)"/>
+  <!-- Obsidian Lower-Right Base Anchor -->
+  <path d="M230 344 L318 344 L290 382 L230 382 Z" fill="url(#primeV2Obsidian)"/>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <line x1="44" y1="408" x2="468" y2="408" stroke="#d8d8d8" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 142 138 L 154 276 C 150 318, 126 352, 134 382 C 142 406, 178 408, 206 396 Q 256 386 312 396 C 348 398, 388 396, 406 386 C 418 374, 402 358, 376 362 C 332 346, 280 316, 240 278 L 234 138" fill="#060606" stroke="#ffffff" stroke-width="6.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="186" cy="316" r="14" fill="none" stroke="#d8d8d8" stroke-width="3.2"/>
+  <path d="M 196 368 Q 256 368 322 368" fill="none" stroke="#d8d8d8" stroke-width="3.2" stroke-dasharray="5 4"/>
+  <path d="M 358 368 C 382 360, 402 366, 408 378" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M 348 380 C 374 374, 394 380, 402 390" fill="none" stroke="#ffffff" stroke-width="4.2" stroke-linecap="round"/>
+  <line x1="254.0" y1="360.0" x2="254.0" y2="326.0" stroke="#d8d8d8" stroke-width="3.8" stroke-dasharray="6 5" stroke-linecap="round"/>
+  <polyline points="262.0,339.0 254.0,326.0 246.0,339.0" fill="none" stroke="#d8d8d8" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

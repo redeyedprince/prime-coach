@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Prime Scheme C — Deep Teal & Fresh Aqua brand palette */
+@theme {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-blue-50: #f0fdfa;
+  --color-blue-100: #ccfbf1;
+  --color-blue-200: #99f6e4;
+  --color-blue-300: #5eead4;
+  --color-blue-400: #2dd4bf;
+  --color-blue-500: #14b8a6;
+  --color-blue-600: #0d9488;
+  --color-blue-700: #0f766e;
+  --color-blue-800: #115e59;
+  --color-blue-900: #134e4a;
+  --color-blue-950: #042f2e;
+}
+
+@layer base {
+  html, body {
+    overscroll-behavior-y: contain;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Calm Night — Obsidian & Deep Teal Dark Mode semantic overrides */
+html.dark {
+  color-scheme: dark;
+  --color-white: #0f172a;
+  --color-slate-50: #070d14;
+  --color-slate-100: #131f33;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+  --color-blue-50: #062a2a;
+  --color-blue-100: #0a3b3a;
+  --color-blue-200: #115e59;
+  --color-blue-700: #2dd4bf;
+  --color-blue-800: #5eead4;
+  --color-blue-900: #99f6e4;
+  --color-blue-950: #ccfbf1;
+  --color-emerald-50: #062c22;
+  --color-emerald-100: #064e3b;
+  --color-emerald-200: #047857;
+  --color-emerald-700: #34d399;
+  --color-emerald-800: #6ee7b7;
+  --color-amber-50: #2a1d08;
+  --color-amber-100: #452c09;
+  --color-amber-200: #78350f;
+  --color-amber-700: #fbbf24;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+  --color-rose-50: #2d0d16;
+  --color-rose-100: #4c0519;
+  --color-rose-200: #881337;
+  --color-rose-700: #fda4af;
+  --color-rose-800: #fecdd3;
+  --color-teal-50: #062a2a;
+  --color-teal-100: #0a3b3a;
+  --color-teal-200: #115e59;
+  --color-teal-700: #2dd4bf;
+  --color-teal-800: #5eead4;
+  --color-teal-900: #99f6e4;
+  --color-sky-50: #082436;
+  --color-sky-100: #0c4a6e;
+  --color-sky-200: #075985;
+  --color-sky-700: #38bdf8;
+}
+
+/* Preserve crisp pure white text & high-contrast Hero Card tokens in Dark Mode */
+html.dark .bg-blue-600,
+html.dark .bg-teal-600,
+html.dark .bg-rose-600,
+html.dark .bg-emerald-600 {
+  --color-white: #ffffff;
+}
+
+html.dark .prime-hero-card {
+  --color-white: #ffffff;
+  --color-teal-50: #f0fdfa;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+}
+
+/* Subtle atmospheric canvas gradient */
+.prime-app-shell {
+  background-image: radial-gradient(
+    ellipse 120% 240px at 50% 0%,
+    rgba(20, 184, 166, 0.08),
+    transparent 70%
+  );
+}
+
+html.dark .prime-app-shell {
+  background-image: radial-gradient(
+    ellipse 120% 260px at 50% 0%,
+    rgba(20, 184, 166, 0.14),
+    transparent 70%
+  );
+}
+
+/* Keyframes for splash, tabs, and celebrations */
+@keyframes primeLogoPop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.86);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes primeRingPulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes primeFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes primeSpark {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.5);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty)) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0.2);
+  }
+}
+
+.prime-logo-pop {
+  animation: primeLogoPop 480ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.prime-ring-pulse {
+  animation: primeRingPulse 1100ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes primeOpacityIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.prime-fade-up {
+  animation: primeFadeUp 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.prime-tab-enter {
+  animation: primeOpacityIn 180ms ease-out;
+}
+
+.prime-spark {
+  animation: primeSpark 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
