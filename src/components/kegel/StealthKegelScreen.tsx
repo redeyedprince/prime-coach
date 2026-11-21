@@ -16,6 +16,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { KegelLevel, UserProfile, WorkoutLogEntry } from '../../types/schemas';
+import {
+  checkNotificationPermission,
+  requestNotificationPermission,
+  sendTestDiscreetNotification,
+  syncDiscreetKegelNotifications,
+  type PrimeNotifPermission,
+} from '../../utils/notifications';
 import { TermHint } from '../common/TermHint';
 
 interface StealthKegelScreenProps {
@@ -180,9 +187,19 @@ export function StealthKegelScreen({
   const [secLeft, setSecLeft] = useState(steps[0].seconds);
   const [completedBanner, setCompletedBanner] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [notifPerm, setNotifPerm] = useState<string>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
-  );
+  const [notifPerm, setNotifPerm] = useState<PrimeNotifPermission>('prompt');
+
+  useEffect(() => {
+    void checkNotificationPermission().then((p) => {
+      setNotifPerm(p);
+      if (p === 'granted' && profile.kegel_reminder_enabled) {
+        void syncDiscreetKegelNotifications(
+          true,
+          profile.kegel_reminder_times ?? ['10:30', '15:00', '20:30'],
+        );
+      }
+    });
+  }, []);
 
   const todayCount = useMemo(
     () =>
@@ -303,21 +320,43 @@ export function StealthKegelScreen({
     });
   };
 
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    window.setTimeout(() => setToastMsg(null), 4500);
+  };
+
+  const handleRequestPermission = async () => {
+    const res = await requestNotificationPermission();
+    setNotifPerm(res);
+    if (res === 'granted') {
+      const times = profile.kegel_reminder_times ?? ['10:30', '15:00', '20:30'];
+      await syncDiscreetKegelNotifications(Boolean(profile.kegel_reminder_enabled), times);
+      showToast('Notifications allowed! Daily discreet reminders are now scheduled.');
+    } else if (res === 'denied') {
+      showToast('Notification permission denied. Enable it anytime in Android App Settings.');
+    } else {
+      showToast('System notifications require the Android APK or a supported browser.');
+    }
+  };
+
   const handleToggleReminder = async () => {
     const nextEnabled = !profile.kegel_reminder_enabled;
-    if (nextEnabled && typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      try {
-        const res = await Notification.requestPermission();
-        setNotifPerm(res);
-      } catch {
-        // ignore
-      }
+    const times = profile.kegel_reminder_times ?? ['10:30', '15:00', '20:30'];
+    if (nextEnabled) {
+      const res = await requestNotificationPermission();
+      setNotifPerm(res);
     }
     await onUpdateProfile({
       ...profile,
       kegel_reminder_enabled: nextEnabled,
       updated_at: new Date().toISOString(),
     });
+    await syncDiscreetKegelNotifications(nextEnabled, times);
+    showToast(
+      nextEnabled
+        ? `Daily discreet reminders enabled (${times.join(', ')}).`
+        : 'Daily discreet reminders paused.',
+    );
   };
 
   const handleToggleSlot = async (time: string) => {
@@ -326,41 +365,24 @@ export function StealthKegelScreen({
     const next = exists
       ? current.filter((t) => t !== time)
       : [...current, time].sort();
+    const finalTimes = next.length > 0 ? next : ['10:30'];
+    if (profile.kegel_reminder_enabled && notifPerm === 'prompt') {
+      const res = await requestNotificationPermission();
+      setNotifPerm(res);
+    }
     await onUpdateProfile({
       ...profile,
-      kegel_reminder_times: next.length > 0 ? next : ['10:30'],
+      kegel_reminder_times: finalTimes,
       updated_at: new Date().toISOString(),
     });
+    await syncDiscreetKegelNotifications(Boolean(profile.kegel_reminder_enabled), finalTimes);
   };
 
   const handleTestDiscreetAlert = async () => {
     fireVibrate([50, 40, 50]);
-    if (typeof Notification !== 'undefined') {
-      let perm = Notification.permission;
-      if (perm === 'default') {
-        try {
-          perm = await Notification.requestPermission();
-          setNotifPerm(perm);
-        } catch {
-          perm = 'denied';
-        }
-      }
-      if (perm === 'granted') {
-        try {
-          new Notification('2-Min Focus & Posture Reset', {
-            body: 'Quick seated breathing & posture check-in (office-safe).',
-            silent: true,
-          });
-          setToastMsg('Discreet notification sent cleanly ("2-Min Focus & Posture Reset").');
-          window.setTimeout(() => setToastMsg(null), 4000);
-          return;
-        } catch {
-          // fallback below
-        }
-      }
-    }
-    setToastMsg('In-app stealth cue: "2-Min Focus & Posture Reset" ready at scheduled times.');
-    window.setTimeout(() => setToastMsg(null), 4000);
+    const res = await sendTestDiscreetNotification();
+    setNotifPerm(res.permission);
+    showToast(res.message);
   };
 
   const ringColor =
@@ -790,11 +812,38 @@ export function StealthKegelScreen({
           })}
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-          <span className="text-[11px] text-slate-500">
-            Notification permission:{' '}
-            <strong className="text-slate-700">{notifPerm}</strong>
-          </span>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+          <div className="flex items-center gap-2 text-[11px] text-slate-500">
+            <span>
+              Notifications:{' '}
+              <strong
+                className={
+                  notifPerm === 'granted'
+                    ? 'text-emerald-700'
+                    : notifPerm === 'denied'
+                      ? 'text-rose-600'
+                      : 'text-slate-700'
+                }
+              >
+                {notifPerm === 'granted'
+                  ? 'Allowed'
+                  : notifPerm === 'prompt'
+                    ? 'Tap to Allow'
+                    : notifPerm === 'denied'
+                      ? 'Blocked'
+                      : 'Web Only'}
+              </strong>
+            </span>
+            {notifPerm !== 'granted' && (
+              <button
+                type="button"
+                onClick={() => void handleRequestPermission()}
+                className="rounded-lg bg-blue-600 px-2.5 py-1 text-[10px] font-bold text-white hover:bg-blue-700"
+              >
+                Allow Alerts
+              </button>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => void handleTestDiscreetAlert()}

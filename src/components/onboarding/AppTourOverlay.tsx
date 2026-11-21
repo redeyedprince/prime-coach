@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowDown, ArrowUp, Sparkles, X } from 'lucide-react';
 
 export interface TourStep {
@@ -75,15 +76,50 @@ export function AppTourOverlay({
     };
   }, [step]);
 
-  if (!step) return null;
+  if (!step || typeof document === 'undefined') return null;
 
   const viewportH = typeof window !== 'undefined' ? window.innerHeight : 800;
   const viewportW = typeof window !== 'undefined' ? window.innerWidth : 400;
   const placeTooltipAbove = rect ? rect.top + rect.height / 2 > viewportH * 0.52 : false;
   const centerX = rect ? rect.left + rect.width / 2 : viewportW / 2;
 
-  return (
-    <div className="fixed inset-0 z-[60] pointer-events-none" aria-live="polite">
+  const tooltipCard = (
+    <div className="w-full max-w-sm rounded-2xl border border-blue-200 bg-white p-4 shadow-2xl pointer-events-auto transition-all duration-200">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-600">
+          <Sparkles className="h-3.5 w-3.5" />
+          Quick Tour · Step {currentStepIdx + 1} of {steps.length}
+        </span>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] font-semibold text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        >
+          Skip
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+
+      <h3 className="mt-1.5 text-base font-extrabold text-slate-900">{step.title}</h3>
+      <p className="mt-1 text-xs leading-relaxed text-slate-600">{step.description}</p>
+
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2">
+        <span className="text-xs font-bold text-blue-800">{step.actionHint}</span>
+        {missingTarget && onFallbackNext && (
+          <button
+            type="button"
+            onClick={onFallbackNext}
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold text-white"
+          >
+            Next
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  return createPortal(
+    <div className="fixed inset-0 z-[115] pointer-events-none" aria-live="polite">
       {/* 4-pane dark vignette blocking clicks everywhere EXCEPT inside the spotlight */}
       {rect ? (
         <>
@@ -129,7 +165,7 @@ export function AppTourOverlay({
 
           {/* Bouncing Pointer Arrow */}
           <div
-            className="fixed z-[65] flex -translate-x-1/2 items-center justify-center rounded-full bg-blue-600 p-1.5 text-white shadow-lg animate-bounce pointer-events-none"
+            className="fixed z-[120] flex -translate-x-1/2 items-center justify-center rounded-full bg-blue-600 p-1.5 text-white shadow-lg animate-bounce pointer-events-none"
             style={{
               left: `${Math.min(viewportW - 28, Math.max(28, centerX))}px`,
               top: placeTooltipAbove ? `${Math.max(12, rect.top - 38)}px` : `${rect.top + rect.height + 8}px`,
@@ -149,48 +185,24 @@ export function AppTourOverlay({
         />
       )}
 
-      {/* Interactive Tooltip Card */}
-      <div
-        className="fixed left-1/2 z-[70] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-blue-200 bg-white p-4 shadow-2xl pointer-events-auto transition-all duration-200"
-        style={
-          rect
-            ? placeTooltipAbove
-              ? { bottom: `${Math.min(viewportH - 140, viewportH - rect.top + 48)}px` }
-              : { top: `${Math.min(viewportH - 210, rect.top + rect.height + 48)}px` }
-            : { top: '50%', transform: 'translate(-50%, -50%)' }
-        }
-      >
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-600">
-            <Sparkles className="h-3.5 w-3.5" />
-            Quick Tour · Step {currentStepIdx + 1} of {steps.length}
-          </span>
-          <button
-            type="button"
-            onClick={onSkip}
-            className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] font-semibold text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-          >
-            Skip
-            <X className="h-3 w-3" />
-          </button>
+      {/* Interactive Tooltip Card — Always Horizontally Centered Inside Viewport Safe Padding */}
+      {rect ? (
+        <div
+          className="fixed inset-x-4 z-[125] flex justify-center pointer-events-none"
+          style={
+            placeTooltipAbove
+              ? { bottom: `${Math.max(16, Math.min(viewportH - 220, viewportH - rect.top + 48))}px` }
+              : { top: `${Math.max(16, Math.min(viewportH - 220, rect.top + rect.height + 48))}px` }
+          }
+        >
+          {tooltipCard}
         </div>
-
-        <h3 className="mt-1.5 text-base font-extrabold text-slate-900">{step.title}</h3>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">{step.description}</p>
-
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2">
-          <span className="text-xs font-bold text-blue-800">{step.actionHint}</span>
-          {missingTarget && onFallbackNext && (
-            <button
-              type="button"
-              onClick={onFallbackNext}
-              className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold text-white"
-            >
-              Next
-            </button>
-          )}
+      ) : (
+        <div className="fixed inset-0 z-[125] flex items-center justify-center p-4 pointer-events-none">
+          {tooltipCard}
         </div>
-      </div>
-    </div>
+      )}
+    </div>,
+    document.body,
   );
 }

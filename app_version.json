@@ -1,6 +1,6 @@
 {
-  "version": "2.3",
-  "buildNumber": 13,
+  "version": "2.4",
+  "buildNumber": 14,
   "releasedAt": "2026-11-21",
-  "notes": "Prime v2.3: GitHub Releases APK hosting (redeyedprince/prime-coach), sex-calibrated protein targets (1.5-1.8 g/kg female vs 1.6-2.0 g/kg male), distinct Male & Female anatomical tape illustrations & measurement protocols, upgraded all 16 custom exercises to sculpted anatomical line art, Kegel benefits ? popup + level selector guide, >4d/wk recovery notice across all training styles, and Sync dynamic Way 1/Way 2 guide + inline OAuth Client ID + automatic personal Prime_Coach Drive folder creation."
+  "notes": "Prime v2.4: Native Android notification permission & scheduled daily discreet Kegel reminders (@capacitor/local-notifications + POST_NOTIFICATIONS), fixed Quick Tour card horizontal centering/cutoff on narrow screens, aligned Pacing Mode & Cue Style dropdowns in Settings, and added animated move visualizations to all 6 tests in the 5-Minute Prime Check-Up."
 }

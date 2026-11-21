@@ -18,6 +18,7 @@ import type {
   UserProfile,
 } from '../../types/schemas';
 import { TermHint } from '../common/TermHint';
+import { ExerciseAnimator } from '../player/ExerciseAnimator';
 import { BodyMetricsPanel } from './BodyMetricsPanel';
 
 const PILLAR_ORDER: PrimePillarKey[] = [
@@ -44,6 +45,44 @@ const HEART_RECOVERY_OPTIONS: Array<{ value: 1 | 2 | 3 | 4 | 5; label: string }>
   { value: 4, label: '4 · Calm nose breathing returns within ~30–45s' },
   { value: 5, label: '5 · Athletic — heart & breath calm almost immediately (<30s)' },
 ];
+
+function BoltBreathVisualSvg() {
+  return (
+    <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-teal-200/80 bg-white p-2 text-center">
+      <div className="flex flex-col items-center gap-1 rounded-lg bg-teal-50/70 p-1.5">
+        <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+          <circle cx="24" cy="24" r="13" fill="none" stroke="#0f766e" strokeWidth="2.5" />
+          <path d="M 37 22 Q 46 22 52 28" fill="none" stroke="#0d9488" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="3 2" />
+          <polyline points="48,29 53,29 52,24" fill="none" stroke="#0d9488" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="text-[9.5px] font-bold leading-tight text-teal-900">
+          1. Normal nose exhale
+        </span>
+      </div>
+      <div className="flex flex-col items-center gap-1 rounded-lg bg-teal-50/70 p-1.5">
+        <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+          <circle cx="32" cy="26" r="14" fill="none" stroke="#0f766e" strokeWidth="2.5" />
+          <line x1="32" y1="26" x2="32" y2="17" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="32" y1="26" x2="39" y2="26" stroke="#0d9488" strokeWidth="2.2" strokeLinecap="round" />
+          <line x1="27" y1="9" x2="37" y2="9" stroke="#0f766e" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+        <span className="text-[9.5px] font-bold leading-tight text-teal-900">
+          2. Pinch nose &amp; time
+        </span>
+      </div>
+      <div className="flex flex-col items-center gap-1 rounded-lg bg-teal-50/70 p-1.5">
+        <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+          <circle cx="38" cy="24" r="13" fill="none" stroke="#0f766e" strokeWidth="2.5" />
+          <path d="M 10 26 Q 18 22 25 22" fill="none" stroke="#0d9488" strokeWidth="2.4" strokeLinecap="round" />
+          <polyline points="21,19 26,22 21,25" fill="none" stroke="#0d9488" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="text-[9.5px] font-bold leading-tight text-teal-900">
+          3. Stop at 1st urge
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function RadarChart({ scores }: { scores: PrimePillarScores }) {
   const cx = 140;
@@ -365,9 +404,21 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 1. Strength */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
-            <div className="text-xs font-bold text-slate-900">
-              1. Strength — Max Clean Push-Ups (Stop when form dips)
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <ExerciseAnimator
+                slug={form.pushup_variant === 'knee' ? 'knee-push-up' : 'push-up'}
+                alt={form.pushup_variant === 'knee' ? 'Knee Push-Up' : 'Push-Up'}
+                className="h-20 w-20 shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="text-xs font-bold text-slate-900">
+                  1. Strength — Max Clean Push-Ups
+                </div>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  Keep your body straight from head to heels (or knees). Lower chest cleanly and stop as soon as form dips.
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -409,9 +460,21 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 2. Core */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
-            <div className="text-xs font-bold text-slate-900">
-              2. Core Endurance — Clean Forearm Plank (Seconds)
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <ExerciseAnimator
+                slug="plank"
+                alt="Forearm Plank"
+                className="h-20 w-20 shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="text-xs font-bold text-slate-900">
+                  2. Core Endurance — Clean Forearm Plank
+                </div>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  Elbows under shoulders, ribs tucked, glutes gently squeezed. Stop when your lower back starts to sag.
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -449,9 +512,21 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 3. Balance */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
-            <div className="text-xs font-bold text-slate-900">
-              3. Balance — Single-Leg Stand (Seconds on weaker leg)
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <ExerciseAnimator
+                slug="single-leg-balance-hold"
+                alt="Single-Leg Balance Stand"
+                className="h-20 w-20 shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="text-xs font-bold text-slate-900">
+                  3. Balance — Single-Leg Stand (Weaker Leg)
+                </div>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  Stand barefoot on one leg with your opposite knee lifted. Stop the timer when your lifted foot touches down.
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -503,9 +578,21 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 4. Mobility */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
-            <div className="text-xs font-bold text-slate-900">
-              4. Mobility — Deep Squat &amp; Overhead Reach Check
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <ExerciseAnimator
+                slug="deep-squat-ankle-opener"
+                alt="Deep Squat & Overhead Reach"
+                className="h-20 w-20 shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="text-xs font-bold text-slate-900">
+                  4. Mobility — Deep Squat &amp; Overhead Reach
+                </div>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  Sink into a slow flat-foot squat (heels down) and reach both arms tall overhead without arching your lower back.
+                </p>
+              </div>
             </div>
             <select
               value={form.mobility_rating}
@@ -523,9 +610,21 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 5. Heart Recovery */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
-            <div className="text-xs font-bold text-slate-900">
-              5. Heart &amp; Stamina — Recovery After 3 Min Brisk March / Stairs
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <ExerciseAnimator
+                slug="high-knees"
+                alt="3-Min Brisk March or Stairs"
+                className="h-20 w-20 shrink-0"
+              />
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="text-xs font-bold text-slate-900">
+                  5. Heart &amp; Stamina — 3-Min Brisk March
+                </div>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  March briskly in place (or climb stairs) for 3 minutes, then stop and notice how fast your breathing calms down.
+                </p>
+              </div>
             </div>
             <select
               value={form.heart_recovery_rating}
@@ -546,11 +645,12 @@ export function PrimeConditionScreen({
           </div>
 
           {/* 6. Breath Efficiency (BOLT) */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2.5">
             <div className="flex items-center gap-1 text-xs font-bold text-slate-900">
               <span>6. Breath Efficiency — Comfortable Nasal Hold (BOLT)</span>
               <TermHint termId="bolt_score" />
             </div>
+            <BoltBreathVisualSvg />
             <p className="text-[11px] leading-relaxed text-slate-600">
               Breathe gently out through your nose, pinch closed, and stop the timer at the{' '}
               <strong>first mild urge</strong> to inhale (not a hard gasp).

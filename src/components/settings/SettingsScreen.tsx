@@ -282,27 +282,29 @@ export function SettingsScreen({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 items-end gap-3">
           <div>
-            <label className="flex items-center gap-1 text-xs font-semibold uppercase text-slate-500">
+            <label className="flex min-h-[20px] items-center gap-1 text-xs font-semibold uppercase text-slate-500">
               <span>Pacing Mode</span>
               <TermHint termId="pacing_mode" />
             </label>
             <select
               value={form.pacing_mode}
               onChange={(e) => setForm({ ...form, pacing_mode: e.target.value as PacingMode })}
-              className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-600"
+              className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-blue-600"
             >
               <option value="strict_time_cap">Strict Time Cap</option>
               <option value="fixed_volume">Fixed Volume</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase text-slate-500">Cue Style</label>
+            <label className="flex min-h-[20px] items-center gap-1 text-xs font-semibold uppercase text-slate-500">
+              <span>Cue Style</span>
+            </label>
             <select
               value={form.cue_style}
               onChange={(e) => setForm({ ...form, cue_style: e.target.value as CueStyle })}
-              className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-600"
+              className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-2.5 text-xs font-medium text-slate-900 outline-none focus:border-blue-600"
             >
               <option value="audio_and_vibrate">Audio + Vibrate</option>
               <option value="vibrate_only">Vibrate Only</option>
