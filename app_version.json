@@ -1,6 +1,6 @@
 {
-  "version": "2.4",
-  "buildNumber": 14,
-  "releasedAt": "2026-11-21",
-  "notes": "Prime v2.4: Native Android notification permission & scheduled daily discreet Kegel reminders (@capacitor/local-notifications + POST_NOTIFICATIONS), fixed Quick Tour card horizontal centering/cutoff on narrow screens, aligned Pacing Mode & Cue Style dropdowns in Settings, and added animated move visualizations to all 6 tests in the 5-Minute Prime Check-Up."
+  "version": "2.5",
+  "buildNumber": 15,
+  "releasedAt": "2026-11-22",
+  "notes": "Prime v2.5: Single-button in-app APK auto-updater (Option A: download & install), live free Gemini model auto-discovery (/v1beta/models), fixed Kegel pause/resume, and intuitive vibrate-on-squeeze / still-on-relax eyes-free haptics."
 }

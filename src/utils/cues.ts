@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { Haptics } from '@capacitor/haptics';
 import type { CueStyle } from '../types/schemas';
 
 let audioCtx: AudioContext | null = null;
@@ -29,6 +31,20 @@ function playBeep(frequency: number, durationMs: number): void {
   }
 }
 
+export function triggerHapticDuration(durationMs: number): void {
+  if (Capacitor.isNativePlatform()) {
+    void Haptics.vibrate({ duration: durationMs }).catch(() => {});
+    return;
+  }
+  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+    try {
+      navigator.vibrate(durationMs);
+    } catch {
+      // ignore on unsupported browsers
+    }
+  }
+}
+
 export function triggerRestCue(cueStyle: CueStyle, kind: 'warning_3s' | 'complete'): void {
   if (cueStyle === 'silent_visual') return;
 
@@ -40,13 +56,7 @@ export function triggerRestCue(cueStyle: CueStyle, kind: 'warning_3s' | 'complet
     }
   }
 
-  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-    if (kind === 'warning_3s') {
-      navigator.vibrate(90);
-    } else {
-      navigator.vibrate([180, 80, 240]);
-    }
-  }
+  triggerHapticDuration(kind === 'warning_3s' ? 90 : 280);
 }
 
 export function playPhaseTick(cueStyle: CueStyle, isUpPhase: boolean): void {

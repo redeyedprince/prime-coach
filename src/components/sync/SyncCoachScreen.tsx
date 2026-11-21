@@ -46,7 +46,6 @@ import {
   compactLocalWorkoutStorage,
   getApkGitHubDownloadUrl,
   getDriveFolderUrl,
-  GITHUB_RELEASES_URL,
   GITHUB_REPO,
   syncWithCoachDrive,
   type AppUpdateCheckResult,
@@ -58,9 +57,12 @@ import {
   parseCoachJsonInput,
 } from '../../engine/coachPrompt';
 import { serializeWorkoutLogsToCsv } from '../../engine/csvExport';
+import { downloadAndInstallApk } from '../../services/apkUpdater';
 import {
+  discoverAvailableGeminiModels,
   extractReadableGeminiSummary,
   runInAppGeminiRequest,
+  type DiscoveredGeminiModel,
   type InAppGeminiResult,
 } from '../../services/geminiApi';
 import {
@@ -176,6 +178,13 @@ export function SyncCoachScreen({
   const [keySavedFlash, setKeySavedFlash] = useState(false);
   const [clientIdInput, setClientIdInput] = useState('');
   const [clientIdSavedFlash, setClientIdSavedFlash] = useState(false);
+  const [discoveredModels, setDiscoveredModels] = useState<DiscoveredGeminiModel[]>([]);
+  const [selectedGeminiModel, setSelectedGeminiModel] = useState<string>('auto');
+
+  // APK In-App Update Modal state (Option A)
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [downloadingUpdate, setDownloadingUpdate] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   // Way 2 In-App Gemini API state & reading window
   const [runningGeminiMode, setRunningGeminiMode] = useState<'plan' | 'assess' | null>(null);
@@ -199,6 +208,7 @@ export function SyncCoachScreen({
     setClientIdInput(m.googleClientId ?? '');
     if (m.geminiApiKey?.trim()) {
       setCoachWay('way2');
+      void discoverAvailableGeminiModels(m.geminiApiKey.trim(), false).then(setDiscoveredModels);
     }
   };
 
@@ -293,11 +303,18 @@ export function SyncCoachScreen({
     await saveDriveSyncMeta(updatedMeta);
     setMeta(updatedMeta);
     setKeySavedFlash(true);
-    setStatusMsg(
-      trimmed
-        ? 'Saved Free Gemini API Key locally on this device (never uploaded to Google Drive). 1-Tap Auto-Gemini is ready!'
-        : 'Removed local Gemini API Key.',
-    );
+    if (trimmed) {
+      const models = await discoverAvailableGeminiModels(trimmed, true);
+      setDiscoveredModels(models);
+      setStatusMsg(
+        models.length > 0
+          ? `Saved Free Gemini API Key locally. Auto-discovered ${models.length} live models (top free model: ${models[0].id}).`
+          : 'Saved Free Gemini API Key locally on this device (never uploaded to Google Drive). 1-Tap Auto-Gemini is ready!',
+      );
+    } else {
+      setDiscoveredModels([]);
+      setStatusMsg('Removed local Gemini API Key.');
+    }
     window.setTimeout(() => setKeySavedFlash(false), 2500);
   };
 
@@ -384,6 +401,7 @@ export function SyncCoachScreen({
         apiKey: activeKey,
         prompt,
         expectPlanJson: mode === 'plan',
+        preferredModel: selectedGeminiModel,
       });
 
       const previousConfig = config;
@@ -534,17 +552,44 @@ export function SyncCoachScreen({
     try {
       const res = await checkAppUpdateFromGitHub();
       setUpdateInfo(res);
-      setStatusMsg(
-        res.updateAvailable
-          ? `New Prime APK v${res.latestVersion} is available on GitHub Releases!`
-          : res.checkedOnline
+      if (res.updateAvailable) {
+        setUpdateModalOpen(true);
+        setStatusMsg(`New Prime APK v${res.latestVersion} is ready to download & install!`);
+      } else {
+        setStatusMsg(
+          res.checkedOnline
             ? `You are up to date — running Prime v${res.currentVersion} (latest on GitHub: v${res.latestVersion}).`
             : `Checked GitHub Releases (${GITHUB_REPO}) — running Prime v${res.currentVersion}.`,
-      );
+        );
+      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to check GitHub Releases.');
     } finally {
       setCheckingUpdate(false);
+    }
+  };
+
+  const handleDownloadAndInstallUpdate = async () => {
+    setErrorMsg(null);
+    setDownloadingUpdate(true);
+    setDownloadProgress(0);
+    try {
+      const targetUrl = updateInfo?.apkDownloadUrl ?? getApkGitHubDownloadUrl();
+      await downloadAndInstallApk(targetUrl, (pct) => setDownloadProgress(pct));
+      setUpdateModalOpen(false);
+      setStatusMsg('Update downloaded! Follow Android’s installer prompt to finish updating Prime.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Update download failed.';
+      if (msg.includes('NEEDS_INSTALL_PERMISSION')) {
+        setErrorMsg(
+          'Please toggle ON "Allow from this source" in Android Settings, then return and tap Download & Install again.',
+        );
+      } else {
+        setErrorMsg(msg);
+      }
+    } finally {
+      setDownloadingUpdate(false);
+      setDownloadProgress(null);
     }
   };
 
@@ -579,8 +624,6 @@ export function SyncCoachScreen({
   };
 
   const driveFolderUrl = getDriveFolderUrl(meta.folderId);
-  const apkUrl = updateInfo?.apkDownloadUrl ?? getApkGitHubDownloadUrl();
-  const releasesUrl = updateInfo?.releasesUrl ?? GITHUB_RELEASES_URL;
 
   return (
     <div className="space-y-4 pb-4">
@@ -839,6 +882,29 @@ export function SyncCoachScreen({
                 100% free tier via Google AI Studio (no credit card). Stored privately in your
                 device DB — never uploaded to Google Drive.
               </p>
+
+              {/* Live Auto-Discovered Gemini Model Selector */}
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-blue-100 bg-white px-2.5 py-2">
+                <span className="text-[10.5px] font-bold text-slate-700 shrink-0">
+                  Active Model:
+                </span>
+                <select
+                  value={selectedGeminiModel}
+                  onChange={(e) => setSelectedGeminiModel(e.target.value)}
+                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-blue-800 outline-none focus:border-blue-600"
+                >
+                  <option value="auto">
+                    {discoveredModels.length > 0
+                      ? `Auto (Latest: ${discoveredModels[0].id})`
+                      : 'Auto (Latest Free Flash)'}
+                  </option>
+                  {discoveredModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* 1-Tap Auto-Run Buttons */}
@@ -1105,12 +1171,12 @@ export function SyncCoachScreen({
         </div>
       </div>
 
-      {/* Android APK Updates Card (GitHub Releases — Zero Login Needed) */}
+      {/* Android APK Updates Card (Single-Button In-App Check, Download & Install) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-slate-900">
             <HardDriveDownload className="h-5 w-5 text-blue-600" />
-            Android APK Updates (GitHub)
+            Android APK Updates
           </div>
           <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">
             v{APP_VERSION} (b{APP_BUILD_NUMBER})
@@ -1118,47 +1184,37 @@ export function SyncCoachScreen({
         </div>
 
         <p className="text-xs text-slate-600">
-          Official <code className="font-mono text-slate-800">Prime-latest.apk</code> releases are
-          hosted on GitHub Releases (<span className="font-mono text-blue-700">{GITHUB_REPO}</span>)
-          — check and download with zero login needed.
+          Checks GitHub Releases (<span className="font-mono text-blue-700">{GITHUB_REPO}</span>)
+          in-app — if a newer version is available, Prime downloads and launches the Android
+          installer directly with no browser needed.
         </p>
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={checkingUpdate}
-            onClick={() => void handleCheckUpdate()}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${checkingUpdate ? 'animate-spin' : ''}`} />
-            {checkingUpdate ? 'Checking...' : 'Check GitHub Updates'}
-          </button>
-          <a
-            href={apkUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-100"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Download Latest APK
-          </a>
-        </div>
-
-        <a
-          href={releasesUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-2 text-[11px] font-semibold text-slate-700 hover:bg-slate-100"
+        <button
+          type="button"
+          disabled={checkingUpdate}
+          onClick={() => void handleCheckUpdate()}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
         >
-          <ExternalLink className="h-3 w-3 text-blue-600" />
-          View All Releases on GitHub
-        </a>
+          <RefreshCw className={`h-4 w-4 ${checkingUpdate ? 'animate-spin' : ''}`} />
+          {checkingUpdate ? 'Checking for Updates...' : 'Check & Update App'}
+        </button>
 
-        {updateInfo && (
+        {updateInfo && !updateModalOpen && (
           <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-2.5 text-xs text-slate-700">
-            <div className="font-semibold text-blue-900">
-              Latest on GitHub: v{updateInfo.latestVersion}
-              {updateInfo.updateAvailable ? ' — New version ready!' : ' (Up to date)'}
+            <div className="flex items-center justify-between gap-2 font-semibold text-blue-900">
+              <span>
+                Latest: v{updateInfo.latestVersion}
+                {updateInfo.updateAvailable ? ' — Update ready!' : ' (Up to date)'}
+              </span>
+              {updateInfo.updateAvailable && (
+                <button
+                  type="button"
+                  onClick={() => setUpdateModalOpen(true)}
+                  className="rounded-lg bg-blue-600 px-2.5 py-1 text-[10px] font-bold text-white"
+                >
+                  Install
+                </button>
+              )}
             </div>
             <div className="mt-0.5 text-[11px] text-slate-600">{updateInfo.notes}</div>
           </div>
@@ -1407,6 +1463,95 @@ export function SyncCoachScreen({
                   className="ml-auto flex-1 rounded-xl bg-blue-600 py-2 text-xs font-bold text-white hover:bg-blue-700"
                 >
                   Done
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* Portal-Centered In-App APK Update Prompt Modal (Option A: Auto-Download & Install) */}
+      {updateModalOpen &&
+        updateInfo &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs"
+            onClick={() => !downloadingUpdate && setUpdateModalOpen(false)}
+          >
+            <div
+              className="w-full max-w-sm space-y-3.5 rounded-2xl border border-blue-200 bg-white p-4 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
+                    <HardDriveDownload className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold text-slate-900">
+                      Prime v{updateInfo.latestVersion} Ready
+                    </h2>
+                    <div className="text-[11px] font-semibold text-slate-500">
+                      Installed: v{updateInfo.currentVersion} → New: v{updateInfo.latestVersion}
+                    </div>
+                  </div>
+                </div>
+                {!downloadingUpdate && (
+                  <button
+                    type="button"
+                    aria-label="Close update modal"
+                    onClick={() => setUpdateModalOpen(false)}
+                    className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">
+                {updateInfo.notes}
+              </div>
+
+              {downloadingUpdate && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-blue-800">
+                    <span>Downloading Prime-latest.apk...</span>
+                    <span>{downloadProgress !== null ? `${downloadProgress}%` : '...'}</span>
+                  </div>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-blue-100">
+                    <div
+                      className="h-full rounded-full bg-blue-600 transition-all duration-200"
+                      style={{ width: `${downloadProgress ?? 15}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={downloadingUpdate}
+                  onClick={() => setUpdateModalOpen(false)}
+                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-600 disabled:opacity-40"
+                >
+                  Later
+                </button>
+                <button
+                  type="button"
+                  disabled={downloadingUpdate}
+                  onClick={() => void handleDownloadAndInstallUpdate()}
+                  className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {downloadingUpdate ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Installing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-3.5 w-3.5" /> Download &amp; Install
+                    </>
+                  )}
                 </button>
               </div>
             </div>

@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { KegelLevel, UserProfile, WorkoutLogEntry } from '../../types/schemas';
+import { triggerHapticDuration } from '../../utils/cues';
 import {
   checkNotificationPermission,
   requestNotificationPermission,
@@ -209,28 +210,28 @@ export function StealthKegelScreen({
     [logs, todayIso],
   );
 
-  const fireVibrate = (pattern: number[]) => {
+  const fireVibrate = (durationMs: number) => {
     if (!hapticRef.current) return;
-    try {
-      navigator.vibrate?.(pattern);
-    } catch {
-      // ignore on desktop browsers without vibration API
-    }
+    triggerHapticDuration(durationMs);
   };
 
+  // Only reset pacer when the user switches difficulty level (never on Pause!)
   useEffect(() => {
-    if (!running && prepCountdown === null) {
-      setStepIdx(0);
-      setSecLeft(steps[0].seconds);
-    }
-  }, [level, steps, running, prepCountdown]);
+    setPrepCountdown(null);
+    setRunning(false);
+    setStepIdx(0);
+    setSecLeft(steps[0].seconds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level]);
 
   // 5-second Get Ready countdown effect
   useEffect(() => {
     if (prepCountdown === null) return;
     if (prepCountdown <= 0) {
       setPrepCountdown(null);
-      fireVibrate([75]);
+      if (steps[0]?.mode === 'contract' || steps[0]?.mode === 'flick') {
+        fireVibrate(850);
+      }
       setRunning(true);
       return;
     }
@@ -257,17 +258,13 @@ export function StealthKegelScreen({
               completedRef.current = true;
               setRunning(false);
               setCompletedBanner(true);
-              fireVibrate([80, 60, 120]);
+              fireVibrate(350);
               void onCompleteSession(level, totalSessionSeconds, 1);
             }
             return 0;
           }
           const nextStep = steps[nextIdx];
           setSecLeft(nextStep.seconds);
-          if (nextStep.mode === 'contract') fireVibrate([75]);
-          else if (nextStep.mode === 'flick') fireVibrate([35]);
-          else if (nextStep.mode === 'reverse') fireVibrate([40, 40, 40]);
-          else fireVibrate([20]);
           return nextIdx;
         });
         return 0;
@@ -279,6 +276,14 @@ export function StealthKegelScreen({
 
   const currentStep = steps[stepIdx] ?? steps[0];
   const nextStep = steps[stepIdx + 1] ?? null;
+
+  // Continuous vibrate-on-squeeze / completely-still-on-relax
+  useEffect(() => {
+    if (!running || !hapticEnabled) return;
+    if (currentStep.mode === 'contract' || currentStep.mode === 'flick') {
+      fireVibrate(850);
+    }
+  }, [running, hapticEnabled, stepIdx, secLeft, currentStep.mode]);
   const activeStepElapsedPct = running
     ? Math.min(100, Math.round(((currentStep.seconds - secLeft + 1) / currentStep.seconds) * 100))
     : 0;
@@ -298,7 +303,9 @@ export function StealthKegelScreen({
 
   const handleSkipPrep = () => {
     setPrepCountdown(null);
-    fireVibrate([75]);
+    if (steps[0]?.mode === 'contract' || steps[0]?.mode === 'flick') {
+      fireVibrate(850);
+    }
     setRunning(true);
   };
 
@@ -379,7 +386,7 @@ export function StealthKegelScreen({
   };
 
   const handleTestDiscreetAlert = async () => {
-    fireVibrate([50, 40, 50]);
+    fireVibrate(120);
     const res = await sendTestDiscreetNotification();
     setNotifPerm(res.permission);
     showToast(res.message);
@@ -685,22 +692,31 @@ export function StealthKegelScreen({
         </div>
 
         {/* Desk Vibration + Protocol Tiers */}
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
-          <span className="flex items-center gap-2 font-medium text-slate-700">
-            <Smartphone className="h-4 w-4 text-blue-600" />
-            Eyes-Free Vibration Cues
-          </span>
-          <button
-            type="button"
-            onClick={() => setHapticEnabled((v) => !v)}
-            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
-              hapticEnabled
-                ? 'bg-blue-600 text-white'
-                : 'border border-slate-300 bg-white text-slate-600'
-            }`}
-          >
-            {hapticEnabled ? 'ON (Pocket Safe)' : 'OFF'}
-          </button>
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-2 font-medium text-slate-700">
+              <Smartphone className="h-4 w-4 text-blue-600" />
+              Eyes-Free Vibration Cues
+            </span>
+            <button
+              type="button"
+              onClick={() => setHapticEnabled((v) => !v)}
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${
+                hapticEnabled
+                  ? 'bg-blue-600 text-white'
+                  : 'border border-slate-300 bg-white text-slate-600'
+              }`}
+            >
+              {hapticEnabled ? 'ON (Pocket Safe)' : 'OFF'}
+            </button>
+          </div>
+          <p className="text-[10.5px] leading-snug text-slate-500">
+            <strong className="text-slate-700">How it works:</strong> Phone{' '}
+            <strong className="text-blue-700">vibrates steadily</strong> while you should{' '}
+            <strong>squeeze</strong>, and stays{' '}
+            <strong className="text-slate-700">completely still</strong> when you should{' '}
+            <strong>relax (0%)</strong>.
+          </p>
         </div>
 
         <div className="mt-3 space-y-2 text-left">

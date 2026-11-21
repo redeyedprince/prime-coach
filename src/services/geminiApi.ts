@@ -9,6 +9,15 @@ export interface InAppGeminiResult {
   planParseError: string | null;
 }
 
+export interface DiscoveredGeminiModel {
+  id: string;
+  displayName: string;
+}
+
+const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+const MODEL_CACHE_KEY = 'prime_gemini_models_cache_v1';
+const MODEL_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
 /**
  * Strips raw JSON code fences OR bare top-level program_config JSON objects
  * from Gemini's coaching reply so the user sees a clean, human-readable
@@ -61,27 +70,160 @@ export function extractReadableGeminiSummary(rawText: string): string {
   return 'Gemini returned an updated training plan JSON cleanly without extra commentary.';
 }
 
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+/**
+ * Scores & ranks Gemini models dynamically from Google's live /v1beta/models catalog
+ * so future releases (e.g. gemini-3.8-flash, gemini-4-*, etc.) are automatically
+ * prioritized without hardcoding future model names.
+ */
+export function rankGeminiModels(
+  rawModels: Array<{
+    name?: string;
+    displayName?: string;
+    supportedGenerationMethods?: string[];
+  }>,
+): DiscoveredGeminiModel[] {
+  const excludedPattern =
+    /embedding|aqa|imagen|veo|lyria|tts|audio|live|robotics|computer-use|deep-research|gemma/i;
+
+  const scored = rawModels
+    .filter((m) => {
+      const id = (m.name ?? '').replace(/^models\//, '');
+      if (!id.toLowerCase().startsWith('gemini-')) return false;
+      if (!m.supportedGenerationMethods?.includes('generateContent')) return false;
+      if (excludedPattern.test(id)) return false;
+      return true;
+    })
+    .map((m) => {
+      const id = (m.name ?? '').replace(/^models\//, '');
+      const lower = id.toLowerCase();
+
+      // Extract version numbers e.g. gemini-3.8-flash -> [3, 8], gemini-4-hydrogen -> [4, 0]
+      const verMatch = lower.match(/^gemini-(\d+)(?:\.(\d+))?/);
+      const major = verMatch ? Number.parseInt(verMatch[1], 10) : 1;
+      const minor = verMatch?.[2] ? Number.parseInt(verMatch[2], 10) : 0;
+
+      // Prefer free-tier-friendly Flash / general text models over heavy Pro/Ultra or preview/exp
+      const isFlash = lower.includes('flash') && !lower.includes('lite');
+      const isFlashLite = lower.includes('flash-lite');
+      const isPro = /\bpro\b/i.test(lower);
+      const isPreviewOrExp = /preview|exp|-00\d$|latest/i.test(lower);
+
+      const tierScore = isFlash ? 40 : isFlashLite ? 25 : !isPro ? 30 : 10;
+      const stabilityBonus = isPreviewOrExp ? -8 : 12;
+      const score = major * 1000 + minor * 100 + tierScore + stabilityBonus;
+
+      return {
+        id,
+        displayName: m.displayName?.trim() || id,
+        score,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const deduped: DiscoveredGeminiModel[] = [];
+  const seen = new Set<string>();
+  for (const item of scored) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      deduped.push({ id: item.id, displayName: item.displayName });
+    }
+  }
+  return deduped;
+}
+
+/**
+ * Fetches and caches (24h) the live list of available generateContent Gemini models
+ * for this user's API key.
+ */
+export async function discoverAvailableGeminiModels(
+  apiKey: string,
+  forceRefresh = false,
+): Promise<DiscoveredGeminiModel[]> {
+  const trimmedKey = apiKey.trim();
+  if (!trimmedKey) return [];
+
+  if (!forceRefresh && typeof localStorage !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(MODEL_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          savedAt: number;
+          models: DiscoveredGeminiModel[];
+        };
+        if (
+          Date.now() - parsed.savedAt < MODEL_CACHE_TTL_MS &&
+          Array.isArray(parsed.models) &&
+          parsed.models.length > 0
+        ) {
+          return parsed.models;
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(trimmedKey)}`,
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as {
+      models?: Array<{
+        name?: string;
+        displayName?: string;
+        supportedGenerationMethods?: string[];
+      }>;
+    };
+    const ranked = rankGeminiModels(data.models ?? []);
+    if (ranked.length > 0 && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(
+          MODEL_CACHE_KEY,
+          JSON.stringify({ savedAt: Date.now(), models: ranked }),
+        );
+      } catch {
+        // ignore storage quota
+      }
+    }
+    return ranked;
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Calls Google's official Free-Tier Gemini API directly from the device using the
  * user's own optional API key (aistudio.google.com/apikey).
- * Automatically captures & validates any returned ProgramConfig JSON (whether
- * raw JSON or embedded inside markdown plaintext).
+ * Automatically discovers the newest available free model from Google's live
+ * catalog and falls back seamlessly if a model hits quota/deprecation.
  */
 export async function runInAppGeminiRequest(params: {
   apiKey: string;
   prompt: string;
   expectPlanJson: boolean;
+  preferredModel?: string;
 }): Promise<InAppGeminiResult> {
   const trimmedKey = params.apiKey.trim();
   if (!trimmedKey) {
     throw new Error('Enter your free Gemini API key first (from aistudio.google.com/apikey).');
   }
 
+  const discovered = await discoverAvailableGeminiModels(trimmedKey, false);
+  const candidateIds: string[] = [];
+  if (params.preferredModel && params.preferredModel !== 'auto') {
+    candidateIds.push(params.preferredModel);
+  }
+  for (const m of discovered) {
+    if (!candidateIds.includes(m.id)) candidateIds.push(m.id);
+  }
+  for (const fb of FALLBACK_MODELS) {
+    if (!candidateIds.includes(fb)) candidateIds.push(fb);
+  }
+
   let lastError = 'Gemini API request failed.';
 
-  for (const model of GEMINI_MODELS) {
+  for (const model of candidateIds.slice(0, 6)) {
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(trimmedKey)}`;
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -97,8 +239,8 @@ export async function runInAppGeminiRequest(params: {
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
       lastError = `Gemini API (${model}) returned ${res.status}: ${errBody.slice(0, 220)}`;
-      if (res.status === 404 || res.status === 429) {
-        continue; // fallback to next free-tier Gemini Flash model
+      if (res.status === 404 || res.status === 429 || res.status === 400) {
+        continue; // fallback to next available model
       }
       throw new Error(lastError);
     }

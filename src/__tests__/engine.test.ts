@@ -45,7 +45,7 @@ import {
 } from '../engine/primeCondition';
 import { computeWorkingSets, evaluateOfflineProgression } from '../engine/progression';
 import { resolveRecoverySafePatterns } from '../engine/recoveryGuard';
-import { extractReadableGeminiSummary } from '../services/geminiApi';
+import { extractReadableGeminiSummary, rankGeminiModels } from '../services/geminiApi';
 import { ProgramConfigSchema, type UserProfile, type WorkoutLogEntry } from '../types/schemas';
 
 const baseProfile: UserProfile = {
@@ -233,6 +233,21 @@ describe('Exercise Catalog & Manifest Verification', () => {
     expect(compareVersionStrings('v2.4', '2.3')).toBeGreaterThan(0);
     expect(compareVersionStrings('v2.3', '2.3')).toBe(0);
     expect(compareVersionStrings('2.2', '2.3')).toBeLessThan(0);
+
+    // Dynamic Gemini model ranking (auto-picks future models like 3.8-flash or 4-hydrogen)
+    const ranked = rankGeminiModels([
+      { name: 'models/gemini-2.0-flash', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-embedding-001', supportedGenerationMethods: ['embedContent'] },
+      { name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-4-hydrogen', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/imagen-3.0-generate-002', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-2.5-flash-preview-tts', supportedGenerationMethods: ['generateContent'] },
+    ]);
+    expect(ranked.map((m) => m.id)).toEqual([
+      'gemini-4-hydrogen',
+      'gemini-3.8-flash',
+      'gemini-2.0-flash',
+    ]);
 
     const noWeightFuel = computeDailyFuelTargets({ ...baseProfile, bodyweight_kg: null });
     expect(noWeightFuel.hasWeight).toBe(false);
