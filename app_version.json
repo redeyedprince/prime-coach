@@ -1,6 +1,6 @@
 {
-  "version": "2.6",
-  "buildNumber": 16,
+  "version": "2.7",
+  "buildNumber": 17,
   "releasedAt": "2026-11-26",
-  "notes": "Prime v2.6: Research-Backed HIIT Timer inside Heart & Stamina (Tabata 20/10, Gibala 60/60, Norwegian 4x4, and Custom HIIT builder with Warm-Up/Cool-Down, per-preset benefit explanations, Audio Cue ON/OFF toggle, native haptics, and weekly frequency guard)."
+  "notes": "Prime v2.7: Reliable dual-source APK auto-updater with generic server feedback and multi-hop redirect support, plus a persistent tap-to-enter launch splash with 28 random quotes on physical strength and vitality."
 }

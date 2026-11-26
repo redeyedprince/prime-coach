@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const APP_VERSION = '2.6';
-export const APP_BUILD_NUMBER = 16;
+export const APP_VERSION = '2.7';
+export const APP_BUILD_NUMBER = 17;
 
 export const MovementPatternSchema = z.enum(['push', 'pull', 'legs', 'core']);
 export type MovementPattern = z.infer<typeof MovementPatternSchema>;

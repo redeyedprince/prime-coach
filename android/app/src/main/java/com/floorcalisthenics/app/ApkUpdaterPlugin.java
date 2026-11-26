@@ -53,15 +53,33 @@ public class ApkUpdaterPlugin extends Plugin {
                     apkFile.delete();
                 }
 
-                URL url = new URL(apkUrl);
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                conn.setConnectTimeout(15000);
-                conn.setReadTimeout(30000);
-                conn.connect();
+                String currentUrl = apkUrl;
+                int status = -1;
+                for (int hop = 0; hop < 5; hop++) {
+                    URL url = new URL(currentUrl);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setInstanceFollowRedirects(false);
+                    conn.setRequestProperty("User-Agent", "Prime-Android-Updater");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
+                    conn.connect();
 
-                int status = conn.getResponseCode();
-                if (status < 200 || status >= 400) {
+                    status = conn.getResponseCode();
+                    if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
+                        String location = conn.getHeaderField("Location");
+                        conn.disconnect();
+                        conn = null;
+                        if (location == null || location.trim().isEmpty()) {
+                            call.reject("Download redirect missing Location header (HTTP " + status + ").");
+                            return;
+                        }
+                        currentUrl = new URL(url, location).toString();
+                        continue;
+                    }
+                    break;
+                }
+
+                if (conn == null || status < 200 || status >= 300) {
                     call.reject("Download failed (HTTP " + status + ").");
                     return;
                 }
@@ -89,6 +107,12 @@ public class ApkUpdaterPlugin extends Plugin {
                 out.flush();
                 out.close();
                 in.close();
+
+                if (downloaded < 1024L * 1024L) {
+                    apkFile.delete();
+                    call.reject("Downloaded file is invalid or incomplete (" + downloaded + " bytes).");
+                    return;
+                }
 
                 Uri contentUri = FileProvider.getUriForFile(
                     getContext(),

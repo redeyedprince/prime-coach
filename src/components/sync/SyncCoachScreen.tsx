@@ -46,7 +46,6 @@ import {
   compactLocalWorkoutStorage,
   getApkGitHubDownloadUrl,
   getDriveFolderUrl,
-  GITHUB_REPO,
   syncWithCoachDrive,
   type AppUpdateCheckResult,
 } from '../../drive/driveSync';
@@ -554,16 +553,16 @@ export function SyncCoachScreen({
       setUpdateInfo(res);
       if (res.updateAvailable) {
         setUpdateModalOpen(true);
-        setStatusMsg(`New Prime APK v${res.latestVersion} is ready to download & install!`);
-      } else {
+        setStatusMsg(`New Prime v${res.latestVersion} is ready to download & install.`);
+      } else if (res.checkedOnline) {
         setStatusMsg(
-          res.checkedOnline
-            ? `You are up to date — running Prime v${res.currentVersion} (latest on GitHub: v${res.latestVersion}).`
-            : `Checked GitHub Releases (${GITHUB_REPO}) — running Prime v${res.currentVersion}.`,
+          `You are up to date — running Prime v${res.currentVersion} (latest on server: v${res.latestVersion}).`,
         );
+      } else {
+        setErrorMsg(res.error || 'Unable to reach the update server. Check your internet connection.');
       }
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to check GitHub Releases.');
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to check update server.');
     } finally {
       setCheckingUpdate(false);
     }
@@ -1184,9 +1183,8 @@ export function SyncCoachScreen({
         </div>
 
         <p className="text-xs text-slate-600">
-          Checks GitHub Releases (<span className="font-mono text-blue-700">{GITHUB_REPO}</span>)
-          in-app — if a newer version is available, Prime downloads and launches the Android
-          installer directly with no browser needed.
+          Checks the update server in-app — if a newer version is available, Prime downloads and
+          launches the Android installer directly with no browser needed.
         </p>
 
         <button
@@ -1200,11 +1198,24 @@ export function SyncCoachScreen({
         </button>
 
         {updateInfo && !updateModalOpen && (
-          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-2.5 text-xs text-slate-700">
-            <div className="flex items-center justify-between gap-2 font-semibold text-blue-900">
+          <div
+            className={`rounded-xl border p-2.5 text-xs ${
+              updateInfo.checkedOnline
+                ? 'border-blue-100 bg-blue-50/70 text-slate-700'
+                : 'border-rose-200 bg-rose-50 text-rose-800'
+            }`}
+          >
+            <div
+              className={`flex items-center justify-between gap-2 font-semibold ${
+                updateInfo.checkedOnline ? 'text-blue-900' : 'text-rose-900'
+              }`}
+            >
               <span>
-                Latest: v{updateInfo.latestVersion}
-                {updateInfo.updateAvailable ? ' — Update ready!' : ' (Up to date)'}
+                {!updateInfo.checkedOnline
+                  ? 'Update check failed'
+                  : updateInfo.updateAvailable
+                    ? `Latest: v${updateInfo.latestVersion} — Update ready!`
+                    : `Latest: v${updateInfo.latestVersion} (Up to date)`}
               </span>
               {updateInfo.updateAvailable && (
                 <button
@@ -1216,7 +1227,9 @@ export function SyncCoachScreen({
                 </button>
               )}
             </div>
-            <div className="mt-0.5 text-[11px] text-slate-600">{updateInfo.notes}</div>
+            <div className="mt-0.5 text-[11px] opacity-90">
+              {updateInfo.checkedOnline ? updateInfo.notes : updateInfo.error || updateInfo.notes}
+            </div>
           </div>
         )}
       </div>
@@ -1516,7 +1529,7 @@ export function SyncCoachScreen({
               {downloadingUpdate && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-bold text-blue-800">
-                    <span>Downloading Prime-latest.apk...</span>
+                    <span>Downloading update from server...</span>
                     <span>{downloadProgress !== null ? `${downloadProgress}%` : '...'}</span>
                   </div>
                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-blue-100">

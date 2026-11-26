@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { pickRandomPrimeQuote, PRIME_QUOTES } from '../components/common/PrimeSplashOverlay';
 import { COACH_ARTICLES, TERM_GLOSSARY } from '../data/coachArticles';
 import {
   buildBalancePowerFlowBlocks,
@@ -20,7 +21,7 @@ import {
   isMonthlyWeightReminderDue,
   serializeBodyMetricsToCsv,
 } from '../engine/bodyMetrics';
-import { compareVersionStrings } from '../drive/driveSync';
+import { checkAppUpdateFromGitHub, compareVersionStrings } from '../drive/driveSync';
 import { buildHiitIntervals, formatWorkRestRatio, HIIT_PRESETS } from '../engine/hiit';
 import {
   buildCalibratedProgramConfig,
@@ -690,5 +691,48 @@ describe('Readiness, Offline Progression & CSV Export', () => {
     expect(lines[1]).toBe(
       '2026-11-18,sess_1,fresh,60.5,push,push-up,1,10,12,reps,3+,none,"felt strong, crisp tempo"',
     );
+  });
+
+  it('provides a large pool of attributed prime body quotes and picks randomly', () => {
+    expect(PRIME_QUOTES.length).toBeGreaterThanOrEqual(25);
+    for (const q of PRIME_QUOTES) {
+      expect(q.text.trim().length).toBeGreaterThan(10);
+      expect(q.author.trim().length).toBeGreaterThan(2);
+    }
+    expect(pickRandomPrimeQuote(0)).toEqual(PRIME_QUOTES[0]);
+    expect(pickRandomPrimeQuote(0.9999)).toEqual(PRIME_QUOTES[PRIME_QUOTES.length - 1]);
+  });
+
+  it('falls back to raw app_version.json on API rate-limit and reports offline errors cleanly', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 403 })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          version: '9.9',
+          buildNumber: 99,
+          notes: 'New update ready.',
+        }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const res = await checkAppUpdateFromGitHub();
+      expect(res.checkedOnline).toBe(true);
+      expect(res.updateAvailable).toBe(true);
+      expect(res.latestVersion).toBe('9.9');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      fetchMock.mockReset();
+      fetchMock.mockRejectedValue(new Error('Network down'));
+      const offline = await checkAppUpdateFromGitHub();
+      expect(offline.checkedOnline).toBe(false);
+      expect(offline.updateAvailable).toBe(false);
+      expect(offline.error).toContain('Network down');
+      expect(offline.notes.toLowerCase()).not.toContain('redeyedprince');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

@@ -29,6 +29,7 @@ export const GITHUB_REPO = 'redeyedprince/prime-coach';
 export const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 export const GITHUB_LATEST_APK_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/Prime-latest.apk`;
 export const GITHUB_LATEST_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+export const GITHUB_RAW_VERSION_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/app_version.json`;
 
 export function getDriveFolderUrl(folderId?: string): string {
   return folderId
@@ -379,16 +380,20 @@ export interface AppUpdateCheckResult {
   releasesUrl: string;
   notes: string;
   checkedOnline: boolean;
+  error?: string;
 }
 
 /**
- * Checks GitHub Releases (https://github.com/redeyedprince/prime-coach/releases)
- * directly with zero login/OAuth required.
+ * Checks the update server for a newer Prime release, falling back from the
+ * Releases API to the raw app_version.json manifest if rate-limited.
  */
 export async function checkAppUpdateFromGitHub(): Promise<AppUpdateCheckResult> {
+  let lastError: string | undefined;
+
   try {
     const res = await fetch(GITHUB_LATEST_API_URL, {
       headers: { Accept: 'application/vnd.github+json' },
+      cache: 'no-store',
     });
     if (res.ok) {
       const data = (await res.json()) as {
@@ -408,7 +413,7 @@ export async function checkAppUpdateFromGitHub(): Promise<AppUpdateCheckResult> 
           .map((l) => l.trim())
           .find((l) => l.length > 0) ||
         data.name ||
-        `Latest Prime release v${latestVersion} on GitHub.`;
+        `Latest Prime release v${latestVersion} is ready.`;
 
       return {
         currentVersion: APP_VERSION,
@@ -421,8 +426,41 @@ export async function checkAppUpdateFromGitHub(): Promise<AppUpdateCheckResult> 
         checkedOnline: true,
       };
     }
-  } catch {
-    // Offline or no published release yet — fall through gracefully
+    lastError = `Update server returned HTTP ${res.status}.`;
+  } catch (err) {
+    lastError = err instanceof Error ? err.message : 'Network error while checking updates.';
+  }
+
+  // Fallback: raw manifest avoids GitHub REST API 60 req/hr IP rate limits
+  try {
+    const rawRes = await fetch(`${GITHUB_RAW_VERSION_URL}?t=${Date.now()}`, {
+      cache: 'no-store',
+    });
+    if (rawRes.ok) {
+      const manifest = (await rawRes.json()) as {
+        version?: string;
+        buildNumber?: number;
+        notes?: string;
+      };
+      const latestVersion = (manifest.version ?? APP_VERSION).replace(/^v/i, '');
+      const latestBuild = typeof manifest.buildNumber === 'number' ? manifest.buildNumber : APP_BUILD_NUMBER;
+      const updateAvailable =
+        compareVersionStrings(latestVersion, APP_VERSION) > 0 || latestBuild > APP_BUILD_NUMBER;
+
+      return {
+        currentVersion: APP_VERSION,
+        currentBuild: APP_BUILD_NUMBER,
+        latestVersion,
+        updateAvailable,
+        apkDownloadUrl: GITHUB_LATEST_APK_URL,
+        releasesUrl: GITHUB_RELEASES_URL,
+        notes: manifest.notes || `Latest Prime release v${latestVersion} is ready.`,
+        checkedOnline: true,
+      };
+    }
+    lastError = `Update manifest returned HTTP ${rawRes.status}.`;
+  } catch (err) {
+    lastError = err instanceof Error ? err.message : lastError || 'Unable to reach update server.';
   }
 
   return {
@@ -432,7 +470,8 @@ export async function checkAppUpdateFromGitHub(): Promise<AppUpdateCheckResult> 
     updateAvailable: false,
     apkDownloadUrl: GITHUB_LATEST_APK_URL,
     releasesUrl: GITHUB_RELEASES_URL,
-    notes: `Open GitHub Releases (${GITHUB_REPO}) to view or download the latest Prime APK.`,
+    notes: 'Unable to reach the update server. Check your internet connection and try again.',
     checkedOnline: false,
+    error: lastError || 'Unable to reach the update server.',
   };
 }
