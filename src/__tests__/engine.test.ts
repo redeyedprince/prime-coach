@@ -69,6 +69,7 @@ const baseProfile: UserProfile = {
   joint_restrictions: ['none'],
   available_equipment: [],
   dumbbell_kg: null,
+  dumbbell_count: 1,
   starting_tier: 'intermediate',
   upper_starting_tier: 'intermediate',
   lower_starting_tier: 'intermediate',
@@ -734,5 +735,29 @@ describe('Readiness, Offline Progression & CSV Export', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('excludes 2-weight exercises when user only has 1 weight tool', () => {
+    const oneToolProfile: UserProfile = {
+      ...baseProfile,
+      available_equipment: ['dumbbell'],
+      dumbbell_kg: 5,
+      dumbbell_count: 1,
+    };
+    const twoToolsProfile: UserProfile = {
+      ...oneToolProfile,
+      dumbbell_count: 2,
+    };
+
+    const oneEligible = getEligibleSlugsByPattern(oneToolProfile);
+    expect(oneEligible.push).not.toContain('dumbbell-fly');
+    expect(oneEligible.push).not.toContain('lateral-raise');
+    expect(oneEligible.push).not.toContain('standing-dumbbell-press');
+    expect(oneEligible.pull).not.toContain('rear-delt-fly');
+    expect(oneEligible.legs).toContain('goblet-squat');
+
+    const twoEligible = getEligibleSlugsByPattern(twoToolsProfile);
+    expect(twoEligible.push).toContain('dumbbell-fly');
+    expect(twoEligible.push).toContain('lateral-raise');
   });
 });

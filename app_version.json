@@ -1,6 +1,6 @@
 {
-  "version": "2.7",
-  "buildNumber": 17,
+  "version": "2.8",
+  "buildNumber": 18,
   "releasedAt": "2026-11-26",
-  "notes": "Prime v2.7: Reliable dual-source APK auto-updater with generic server feedback and multi-hop redirect support, plus a persistent tap-to-enter launch splash with 28 random quotes on physical strength and vitality."
+  "notes": "Prime v2.8: Unified Conditioning tab (HIIT Timer, Heart & Stamina, Kegel, Breathwork with Cyclic Power Breath, Mobility, Balance), 1 vs 2 weight tool matching, clear clickable vs display UI hierarchy, and Android Back-button + 3-tap exit guard."
 }

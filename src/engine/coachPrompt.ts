@@ -24,6 +24,7 @@ export function getEligibleSlugsByPattern(
 ): Record<MovementPattern, string[]> {
   const includeGym = profile.active_location === 'gym';
   const equip = profile.available_equipment ?? [];
+  const dbCount = profile.dumbbell_count ?? 1;
   const restricted = new Set(profile.joint_restrictions.filter((j) => j !== 'none'));
 
   const result: Record<MovementPattern, string[]> = {
@@ -39,6 +40,7 @@ export function getEligibleSlugsByPattern(
     if (ex.required_equipment) {
       if (ex.required_equipment === 'gym' && !includeGym) continue;
       if (ex.required_equipment !== 'gym' && !equip.includes(ex.required_equipment)) continue;
+      if (ex.required_equipment === 'dumbbell' && (ex.required_dumbbell_count ?? 1) > dbCount) continue;
     }
     if (result[ex.pattern].length < 24) {
       result[ex.pattern].push(ex.slug);
@@ -81,7 +83,11 @@ export function buildPrimeCoachContextMarkdown(
       ? 'Full Gym Access'
       : profile.available_equipment.length > 0
         ? profile.available_equipment.join(', ') +
-          (profile.dumbbell_kg ? ` (${profile.dumbbell_kg} kg)` : '')
+          (profile.dumbbell_kg
+            ? ` (${profile.dumbbell_count ?? 1}× ${profile.dumbbell_kg} kg)`
+            : profile.available_equipment.includes('dumbbell')
+              ? ` (${profile.dumbbell_count ?? 1} weight tool)`
+              : '')
         : 'Floor Only (Zero Equipment)';
 
   const primeSnapshot = latestAssessment

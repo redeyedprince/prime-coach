@@ -48,6 +48,7 @@ export interface FloorExercise {
   contraindicated_joints: Exclude<JointTag, 'none'>[];
   tier: StartingTier;
   required_equipment?: EquipmentRequirement;
+  required_dumbbell_count?: 1 | 2;
   focus_tags?: FocusTag[];
   session_role?: SessionRole;
   primaryMuscle?: string;
@@ -734,6 +735,7 @@ const CURATED_EXERCISES: FloorExercise[] = [
     contraindicated_joints: ['shoulder'],
     tier: 'foundation',
     required_equipment: 'dumbbell',
+    required_dumbbell_count: 2,
     focus_tags: ['chest_lift'],
     session_role: 'accessory',
     cues: 'Elbows softly bent; open wide until triceps touch floor, squeeze chest up.',
@@ -749,6 +751,7 @@ const CURATED_EXERCISES: FloorExercise[] = [
     contraindicated_joints: ['shoulder', 'lower_back'],
     tier: 'intermediate',
     required_equipment: 'dumbbell',
+    required_dumbbell_count: 2,
     focus_tags: ['v_taper', 'chest_lift'],
     session_role: 'primary',
     cues: 'Ribs stacked over hips; press dumbbell cleanly overhead.',
@@ -764,6 +767,7 @@ const CURATED_EXERCISES: FloorExercise[] = [
     contraindicated_joints: ['shoulder'],
     tier: 'foundation',
     required_equipment: 'dumbbell',
+    required_dumbbell_count: 2,
     focus_tags: ['v_taper'],
     session_role: 'accessory',
     cues: 'Lead with elbows slightly forward to cap side delts.',
@@ -794,6 +798,7 @@ const CURATED_EXERCISES: FloorExercise[] = [
     contraindicated_joints: ['shoulder', 'lower_back'],
     tier: 'foundation',
     required_equipment: 'dumbbell',
+    required_dumbbell_count: 2,
     focus_tags: ['posture_pull', 'chest_lift'],
     session_role: 'accessory',
     cues: 'Hinge forward; sweep arms wide squeezing rear shoulders & upper back.',
@@ -1458,18 +1463,32 @@ function isJointSafe(ex: FloorExercise, jointRestrictions: JointTag[]): boolean 
   return !ex.contraindicated_joints.some((j) => active.includes(j));
 }
 
+export function isEquipmentCompatible(
+  ex: FloorExercise,
+  availableEquipment: EquipmentItem[] = [],
+  includeGym = false,
+  dumbbellCount = 1,
+): boolean {
+  if (!ex.required_equipment) return true;
+  if (ex.required_equipment === 'gym') return includeGym;
+  if (!availableEquipment.includes(ex.required_equipment)) return false;
+  if (ex.required_equipment === 'dumbbell' && (ex.required_dumbbell_count ?? 1) > dumbbellCount) {
+    return false;
+  }
+  return true;
+}
+
 export function getLadderForPattern(
   pattern: MovementPattern,
   availableEquipment: EquipmentItem[] = [],
   includeGym = false,
+  dumbbellCount = 1,
 ): FloorExercise[] {
   return FLOOR_EXERCISE_ALLOWLIST.filter(
     (ex) =>
       ex.pattern === pattern &&
       ex.rung_index >= 0 &&
-      (!ex.required_equipment ||
-        (ex.required_equipment === 'gym' && includeGym) ||
-        (ex.required_equipment !== 'gym' && availableEquipment.includes(ex.required_equipment))),
+      isEquipmentCompatible(ex, availableEquipment, includeGym, dumbbellCount),
   ).sort((a, b) => a.rung_index - b.rung_index);
 }
 
@@ -1487,6 +1506,7 @@ export function resolveSafeExercise(
   availableEquipment: EquipmentItem[] = [],
   includeGym = false,
   bodyFocus: BodyFocus = 'balanced',
+  dumbbellCount = 1,
 ): FloorExercise {
   const base = ALLOWLIST_BY_SLUG[slug] ?? FLOOR_EXERCISE_ALLOWLIST[2];
   let candidate = base;
@@ -1510,7 +1530,7 @@ export function resolveSafeExercise(
         ex.pattern === base.pattern &&
         ex.required_equipment &&
         ex.required_equipment !== 'gym' &&
-        availableEquipment.includes(ex.required_equipment) &&
+        isEquipmentCompatible(ex, availableEquipment, false, dumbbellCount) &&
         isJointSafe(ex, jointRestrictions),
     );
     if (equipMatch) {
@@ -1523,7 +1543,7 @@ export function resolveSafeExercise(
   }
 
   if (!isJointSafe(candidate, jointRestrictions)) {
-    const ladder = getLadderForPattern(candidate.pattern, availableEquipment, includeGym);
+    const ladder = getLadderForPattern(candidate.pattern, availableEquipment, includeGym, dumbbellCount);
     const safeAlt = ladder.find(
       (ex) => (!quietHotelMode || ex.impact_level === 'low') && isJointSafe(ex, jointRestrictions),
     );
@@ -1558,17 +1578,14 @@ function pickBySlugOrSafe(
   usedSlugs: Set<string> = new Set(),
 ): FloorExercise {
   const equip = profile.available_equipment ?? [];
+  const dbCount = profile.dumbbell_count ?? 1;
   const validCandidates: FloorExercise[] = [];
   for (const slug of preferredSlugs) {
     const ex = ALLOWLIST_BY_SLUG[slug];
     if (!ex) continue;
     if (quietMode && ex.impact_level === 'explosive') continue;
     if (!isJointSafe(ex, profile.joint_restrictions)) continue;
-    if (
-      !ex.required_equipment ||
-      (ex.required_equipment === 'gym' && includeGym) ||
-      (ex.required_equipment !== 'gym' && equip.includes(ex.required_equipment))
-    ) {
+    if (isEquipmentCompatible(ex, equip, includeGym, dbCount)) {
       validCandidates.push(ex);
     }
   }
@@ -2269,6 +2286,7 @@ export function getAlternativeExercisesForSlot(
 ): FloorExercise[] {
   const includeGym = profile.active_location === 'gym';
   const equip = profile.available_equipment ?? [];
+  const dbCount = profile.dumbbell_count ?? 1;
   const quietMode = profile.quiet_hotel_mode;
   return FLOOR_EXERCISE_ALLOWLIST.filter(
     (ex) =>
@@ -2276,9 +2294,7 @@ export function getAlternativeExercisesForSlot(
       ex.pattern === current.pattern &&
       (!quietMode || ex.impact_level === 'low') &&
       isJointSafe(ex, profile.joint_restrictions) &&
-      (!ex.required_equipment ||
-        (ex.required_equipment === 'gym' && includeGym) ||
-        (ex.required_equipment !== 'gym' && equip.includes(ex.required_equipment))),
+      isEquipmentCompatible(ex, equip, includeGym, dbCount),
   ).slice(0, 40);
 }
 

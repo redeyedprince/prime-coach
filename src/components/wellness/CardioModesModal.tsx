@@ -25,7 +25,7 @@ import type { UserProfile, WorkoutLogEntry } from '../../types/schemas';
 import { playBeep, triggerHapticDuration } from '../../utils/cues';
 import { TermHint } from '../common/TermHint';
 
-type CardioTab = 'zone2' | 'hiit' | 'vo2max' | 'finisher';
+export type CardioTab = 'zone2' | 'hiit' | 'vo2max' | 'finisher';
 
 interface IntervalSegment {
   label: string;
@@ -89,6 +89,7 @@ interface CardioModesModalProps {
     durationSeconds: number,
     notes: string,
   ) => Promise<void>;
+  initialTab?: CardioTab;
   onClose: () => void;
 }
 
@@ -99,9 +100,10 @@ export function CardioModesModal({
   isCardioForced,
   onToggleFinisher,
   onLogCardioSession,
+  initialTab = 'zone2',
   onClose,
 }: CardioModesModalProps) {
-  const [tab, setTab] = useState<CardioTab>('zone2');
+  const [tab, setTab] = useState<CardioTab>(initialTab);
   const [audioEnabled, setAudioEnabled] = useState(profile.cue_style !== 'silent_visual');
   const audioRef = useRef(audioEnabled);
   audioRef.current = audioEnabled;

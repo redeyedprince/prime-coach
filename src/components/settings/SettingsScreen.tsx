@@ -430,7 +430,32 @@ export function SettingsScreen({
             </button>
           </div>
           {(form.available_equipment ?? []).includes('dumbbell') && (
-            <div className="mt-2 space-y-2">
+            <div className="mt-2 space-y-2.5">
+              <div>
+                <label className="text-[11px] font-semibold uppercase text-slate-500">
+                  How Many Weight Tools?
+                </label>
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  {[
+                    { count: 1, label: '1 Weight Tool', sub: 'Single dumbbell / jug' },
+                    { count: 2, label: '2 Weight Tools', sub: 'Matching pair' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.count}
+                      type="button"
+                      onClick={() => setForm({ ...form, dumbbell_count: opt.count })}
+                      className={`rounded-xl border px-2.5 py-2 text-left transition ${
+                        (form.dumbbell_count ?? 1) === opt.count
+                          ? 'border-blue-600 bg-blue-50 text-blue-800'
+                          : 'border-slate-200 bg-slate-50 text-slate-600'
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{opt.label}</div>
+                      <div className="text-[10px] opacity-75">{opt.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {HOUSEHOLD_WEIGHT_PRESETS.map((preset) => (
                   <button

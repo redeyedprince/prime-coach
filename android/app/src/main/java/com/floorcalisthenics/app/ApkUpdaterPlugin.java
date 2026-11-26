@@ -138,4 +138,12 @@ public class ApkUpdaterPlugin extends Plugin {
             }
         }).start();
     }
+
+    @PluginMethod
+    public void exitApp(PluginCall call) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> getActivity().finishAffinity());
+        }
+        call.resolve();
+    }
 }

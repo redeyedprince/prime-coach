@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const APP_VERSION = '2.7';
-export const APP_BUILD_NUMBER = 17;
+export const APP_VERSION = '2.8';
+export const APP_BUILD_NUMBER = 18;
 
 export const MovementPatternSchema = z.enum(['push', 'pull', 'legs', 'core']);
 export type MovementPattern = z.infer<typeof MovementPatternSchema>;
@@ -83,6 +83,7 @@ export const UserProfileSchema = z.object({
   joint_restrictions: z.array(JointTagSchema).min(1),
   available_equipment: z.array(EquipmentItemSchema).default([]),
   dumbbell_kg: z.number().positive().max(200).nullable().optional(),
+  dumbbell_count: z.number().int().min(1).max(2).default(1),
   starting_tier: StartingTierSchema,
   upper_starting_tier: StartingTierSchema.default('intermediate'),
   lower_starting_tier: StartingTierSchema.default('intermediate'),

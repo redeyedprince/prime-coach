@@ -144,6 +144,9 @@ export function OnboardingFlow({ initialProfile, onComplete }: OnboardingFlowPro
   const [dumbbellKg, setDumbbellKg] = useState<string>(
     initialProfile?.dumbbell_kg ? String(initialProfile.dumbbell_kg) : '5',
   );
+  const [dumbbellCount, setDumbbellCount] = useState<1 | 2>(
+    initialProfile?.dumbbell_count === 2 ? 2 : 1,
+  );
   const [jointRestrictions, setJointRestrictions] = useState<JointTag[]>(
     initialProfile?.joint_restrictions ?? ['none'],
   );
@@ -248,6 +251,7 @@ export function OnboardingFlow({ initialProfile, onComplete }: OnboardingFlowPro
         availableEquipment.includes('dumbbell') && parsedDb && !Number.isNaN(parsedDb) && parsedDb > 0
           ? parsedDb
           : null,
+      dumbbell_count: dumbbellCount,
       starting_tier: startingTier,
       upper_starting_tier: startingTier,
       lower_starting_tier: startingTier,
@@ -762,6 +766,26 @@ export function OnboardingFlow({ initialProfile, onComplete }: OnboardingFlowPro
               </div>
               {availableEquipment.includes('dumbbell') && (
                 <div className="mt-2 space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-2.5">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { count: 1 as const, label: '1 Weight Tool', sub: 'Single jug / dumbbell' },
+                      { count: 2 as const, label: '2 Weight Tools', sub: 'Matching pair' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.count}
+                        type="button"
+                        onClick={() => setDumbbellCount(opt.count)}
+                        className={`rounded-lg border px-2 py-1.5 text-left ${
+                          dumbbellCount === opt.count
+                            ? 'border-blue-600 bg-blue-600 text-white'
+                            : 'border-slate-200 bg-white text-slate-600'
+                        }`}
+                      >
+                        <div className="text-[11px] font-bold">{opt.label}</div>
+                        <div className="text-[9.5px] opacity-80">{opt.sub}</div>
+                      </button>
+                    ))}
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {HOUSEHOLD_WEIGHT_PRESETS.map((preset) => (
                       <button

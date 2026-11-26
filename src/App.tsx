@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
+  ArrowLeft,
   ArrowLeftRight,
   Building2,
   Calendar,
   CalendarDays,
+  ChevronRight,
   CircleDot,
   Cloud,
   Dumbbell,
@@ -85,7 +87,7 @@ import type {
   WorkoutLogEntry,
 } from './types/schemas';
 
-type Tab = 'today' | 'kegel' | 'plan' | 'sync' | 'settings';
+type Tab = 'today' | 'conditioning' | 'plan' | 'sync' | 'settings';
 
 const TOUR_STEPS: TourStep[] = [
   {
@@ -122,11 +124,11 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'nav_kegel',
-    targetId: 'nav-kegel',
-    title: 'Seated Desk Kegel Mode',
+    targetId: 'nav-conditioning',
+    title: 'Conditioning & Kegel Hub',
     description:
-      'Tap Kegel for a plain-English How-To guide, guided hold & fast-squeeze timer, Office Stealth mode, and discreet daily reminders.',
-    actionHint: 'Tap Kegel in the bottom bar',
+      'Tap Conditioning for HIIT Timer, Heart & Stamina (Zone-2 & VO2 Max), Seated Kegel, Mobility Reset, Balance & Pop, and Breathwork.',
+    actionHint: 'Tap Conditioning in the bottom bar',
   },
   {
     id: 'nav_plan',
@@ -172,6 +174,9 @@ export function App() {
   const [runningCalibration, setRunningCalibration] = useState(false);
   const [breathModalOpen, setBreathModalOpen] = useState(false);
   const [cardioModalOpen, setCardioModalOpen] = useState(false);
+  const [cardioInitialTab, setCardioInitialTab] = useState<'zone2' | 'hiit' | 'vo2max' | 'finisher'>('zone2');
+  const [conditioningSub, setConditioningSub] = useState<'hub' | 'kegel'>('hub');
+  const [exitTapCount, setExitTapCount] = useState(0);
   const [planInitialView, setPlanInitialView] = useState<'weekly' | 'monthly' | 'prime' | 'guide'>('weekly');
   const [planInitialPrimeSub, setPlanInitialPrimeSub] = useState<'pillars' | 'body'>('pillars');
   const [monthlyWeightDraft, setMonthlyWeightDraft] = useState('');
@@ -218,6 +223,77 @@ export function App() {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('prime_theme_mode', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
+  useEffect(() => {
+    if (exitTapCount <= 0) return;
+    const id = window.setTimeout(() => setExitTapCount(0), 1000);
+    return () => window.clearTimeout(id);
+  }, [exitTapCount]);
+
+  useEffect(() => {
+    const onBackPressed = () => {
+      if (swapTargetBlock) {
+        setSwapTargetBlock(null);
+        return;
+      }
+      if (equipModalOpen) {
+        setEquipModalOpen(false);
+        return;
+      }
+      if (breathModalOpen) {
+        setBreathModalOpen(false);
+        return;
+      }
+      if (cardioModalOpen) {
+        setCardioModalOpen(false);
+        return;
+      }
+      if (playing) {
+        setPlaying(false);
+        return;
+      }
+      if (runningCalibration) {
+        setRunningCalibration(false);
+        return;
+      }
+      if (tourStepIdx !== null) {
+        setTourStepIdx(null);
+        return;
+      }
+      if (tab !== 'today') {
+        if (tab === 'conditioning' && conditioningSub === 'kegel') {
+          setConditioningSub('hub');
+        } else {
+          setTab('today');
+        }
+        return;
+      }
+      setExitTapCount((prev) => {
+        const next = prev + 1;
+        if (next >= 3) {
+          const cap = (window as unknown as {
+            Capacitor?: { Plugins?: { ApkUpdater?: { exitApp?: () => Promise<void> } } };
+          }).Capacitor;
+          void cap?.Plugins?.ApkUpdater?.exitApp?.();
+          return 0;
+        }
+        return next;
+      });
+    };
+
+    window.addEventListener('primeBackPressed', onBackPressed);
+    return () => window.removeEventListener('primeBackPressed', onBackPressed);
+  }, [
+    swapTargetBlock,
+    equipModalOpen,
+    breathModalOpen,
+    cardioModalOpen,
+    playing,
+    runningCalibration,
+    tourStepIdx,
+    tab,
+    conditioningSub,
+  ]);
 
   const dismissSplash = useCallback(() => {
     sessionStorage.setItem('prime_splash_seen', '1');
@@ -730,7 +806,8 @@ export function App() {
                 type="button"
                 onClick={() => {
                   setKegelBannerMsg(null);
-                  setTab('kegel');
+                  setTab('conditioning');
+                  setConditioningSub('kegel');
                 }}
                 className="rounded-lg bg-blue-600 px-2.5 py-1 text-[11px] font-bold text-white"
               >
@@ -823,7 +900,7 @@ export function App() {
 
             {/* Animated SVG Progress Rings Consistency Strip */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white px-2 py-2.5 text-center shadow-xs">
+              <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-slate-50/70 px-2 py-2.5 text-center">
                 <ProgressRing
                   value={weeklyStats.workoutsThisWeek}
                   max={profile.days_per_week}
@@ -835,19 +912,23 @@ export function App() {
               </div>
               <button
                 type="button"
-                onClick={() => setTab('kegel')}
-                className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white px-2 py-2.5 text-center shadow-xs transition active:scale-95 hover:bg-blue-50/40"
+                onClick={() => {
+                  setTab('conditioning');
+                  setConditioningSub('kegel');
+                }}
+                className="flex flex-col items-center rounded-2xl border border-teal-200 bg-white px-2 py-2.5 text-center shadow-sm transition active:scale-95 hover:border-teal-400 hover:bg-teal-50/30"
               >
                 <ProgressRing
                   value={weeklyStats.kegelToday}
                   max={3}
                   fillColor="stroke-teal-500"
                 />
-                <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                  Kegel Today
+                <div className="mt-1.5 flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700">
+                  <span>Kegel Today</span>
+                  <ChevronRight className="h-3 w-3" />
                 </div>
               </button>
-              <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white px-2 py-2.5 text-center shadow-xs">
+              <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-slate-50/70 px-2 py-2.5 text-center">
                 <ProgressRing
                   value={fuelHitsToday}
                   max={3}
@@ -994,83 +1075,8 @@ export function App() {
               }}
             />
 
-            {/* Reset & Prime Mini-Flows (Mobility, Balance/Power, Breathwork, Heart Modes) */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-500">
-                  <Sparkles className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Reset &amp; Prime Mini-Flows</span>
-                  <TermHint termId="mobility_flow" />
-                </div>
-                <span className="text-[10px] font-semibold text-slate-400">Anytime · 2–9m</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveFlowMode('mobility');
-                    setPlaying(true);
-                  }}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-2 text-left transition hover:border-blue-300 hover:bg-blue-50/50"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-                    <Footprints className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-bold text-slate-900">Mobility Reset</div>
-                    <div className="truncate text-[10px] text-slate-500">4m · Neck, Hips, Feet</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveFlowMode('balance');
-                    setPlaying(true);
-                  }}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-2 text-left transition hover:border-amber-300 hover:bg-amber-50/50"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-                    <Zap className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-bold text-slate-900">Balance &amp; Pop</div>
-                    <div className="truncate text-[10px] text-slate-500">3m · Stability &amp; Power</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setBreathModalOpen(true)}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-2 text-left transition hover:border-teal-300 hover:bg-teal-50/50"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
-                    <Wind className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-bold text-slate-900">Breathwork</div>
-                    <div className="truncate text-[10px] text-slate-500">2m · Sigh, Box, Sleep</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCardioModalOpen(true)}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-2 text-left transition hover:border-rose-300 hover:bg-rose-50/50"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
-                    <HeartPulse className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-bold text-slate-900">Heart &amp; Stamina</div>
-                    <div className="truncate text-[10px] text-slate-500">Zone-2 &amp; VO2 Max</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* 72-Hour Muscle Recovery Guard Status */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm space-y-2">
+            {/* 72-Hour Muscle Recovery Guard Status (Read-Only Display) */}
+            <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-3 space-y-2">
               <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-500">
                 <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
                 <span>Muscle Recovery Guard (72h Cooldown)</span>
@@ -1361,14 +1367,168 @@ export function App() {
           </div>
         )}
 
-        {tab === 'kegel' && (
-          <StealthKegelScreen
-            profile={profile}
-            logs={logs}
-            todayIso={todayStr}
-            onUpdateProfile={handleUpdateProfileFromKegel}
-            onCompleteSession={handleCompleteKegelSession}
-          />
+        {tab === 'conditioning' && (
+          conditioningSub === 'kegel' ? (
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setConditioningSub('hub')}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition active:scale-95 hover:bg-slate-50"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to Conditioning
+              </button>
+              <StealthKegelScreen
+                profile={profile}
+                logs={logs}
+                todayIso={todayStr}
+                onUpdateProfile={handleUpdateProfileFromKegel}
+                onCompleteSession={handleCompleteKegelSession}
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3">
+                <div className="flex items-center gap-2 text-base font-extrabold text-slate-900">
+                  <HeartPulse className="h-5 w-5 text-rose-600" />
+                  <span>Conditioning &amp; Recovery</span>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-600">
+                  Tap any card below to launch HIIT intervals, heart stamina, pelvic floor training, mobility, balance, or breathwork.
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCardioInitialTab('hiit');
+                    setCardioModalOpen(true);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-rose-400 hover:bg-rose-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+                      <Flame className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">HIIT Timer</div>
+                      <div className="truncate text-xs text-slate-500">
+                        Tabata 20/10, Gibala 60/60, Norwegian 4×4 &amp; Custom
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-rose-500" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCardioInitialTab('zone2');
+                    setCardioModalOpen(true);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-blue-400 hover:bg-blue-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                      <HeartPulse className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">Heart &amp; Stamina</div>
+                      <div className="truncate text-xs text-slate-500">
+                        Zone-2 Aerobic, VO2 Max &amp; Post-Workout Finisher
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-blue-500" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setConditioningSub('kegel')}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-teal-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-teal-400 hover:bg-teal-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
+                      <CircleDot className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">
+                        Kegel / Pelvic Floor
+                      </div>
+                      <div className="truncate text-xs text-slate-500">
+                        {weeklyStats.kegelToday}/3 today · Guided squeeze &amp; stealth cues
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-teal-600" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBreathModalOpen(true)}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-cyan-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-cyan-400 hover:bg-cyan-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                      <Wind className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">Breathwork</div>
+                      <div className="truncate text-xs text-slate-500">
+                        Downshift Sigh, Box 4-4-4-4, Sleep 4-7-8 &amp; Power Breath
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-cyan-600" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveFlowMode('mobility');
+                    setPlaying(true);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-indigo-400 hover:bg-indigo-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
+                      <Footprints className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">Mobility Reset</div>
+                      <div className="truncate text-xs text-slate-500">
+                        4 min · Neck, thoracic spine, hips &amp; feet
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-indigo-500" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveFlowMode('balance');
+                    setPlaying(true);
+                  }}
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-white p-3.5 text-left shadow-sm transition active:scale-[0.99] hover:border-amber-400 hover:bg-amber-50/30"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-slate-900">Balance &amp; Pop</div>
+                      <div className="truncate text-xs text-slate-500">
+                        3 min · Single-leg stability &amp; athletic coordination
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-amber-600" />
+                </button>
+              </div>
+            </div>
+          )
         )}
 
         {tab === 'plan' && (
@@ -1599,19 +1759,20 @@ export function App() {
           </button>
           <button
             type="button"
-            data-tour-id="nav-kegel"
+            data-tour-id="nav-conditioning"
             onClick={() => {
-              setTab('kegel');
+              setTab('conditioning');
+              setConditioningSub('hub');
               advanceTourIfStep('nav_kegel');
             }}
-            className={`flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[10px] font-semibold transition active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-              tab === 'kegel'
+            className={`flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[9.5px] font-semibold tracking-tight transition active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+              tab === 'conditioning'
                 ? 'bg-blue-50 text-blue-700 font-bold'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <CircleDot className="h-4.5 w-4.5" />
-            Kegel
+            <HeartPulse className="h-4.5 w-4.5" />
+            Conditioning
           </button>
           <button
             type="button"
@@ -1673,10 +1834,21 @@ export function App() {
           logs={logs}
           cardioFinisherActive={cardioActive}
           isCardioForced={isCardioForced}
+          initialTab={cardioInitialTab}
           onToggleFinisher={handleToggleCardioFinisher}
           onLogCardioSession={handleLogCardioSession}
           onClose={() => setCardioModalOpen(false)}
         />
+      )}
+
+      {exitTapCount > 0 && exitTapCount < 3 && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-slate-900/90 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm transition-opacity duration-200"
+        >
+          {exitTapCount === 1 ? 'Tap 2 more times to exit' : 'Tap 1 more time to exit'}
+        </div>
       )}
 
       {tourStepIdx !== null && (
