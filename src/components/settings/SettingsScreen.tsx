@@ -69,9 +69,9 @@ const RESEARCH_REFERENCES = [
       'Keith Baar (2017, Sports Medicine), Rio et al. (2015, BJSM), Kongsgaard et al. (2009), & Magnusson et al. (2010) — 30–45s static isometrics & slow 3–4s lowering with 48–72h collagen synthesis windows.',
   },
   {
-    topic: 'Cardiorespiratory Fitness, Zone-2 & VO2 Max',
+    topic: 'Cardiorespiratory Fitness, Zone-2, HIIT & VO2 Max',
     detail:
-      'Mandsager et al. (2018, JAMA Network Open), Helgerud et al. (2007, MSSE), & San-Millán & Brooks (2018, Sports Medicine) — pairing easy conversational Zone-2 aerobic work with weekly high-intensity VO2 Max intervals for peak heart/lung longevity.',
+      'Mandsager et al. (2018, JAMA Network Open), Helgerud et al. (2007, MSSE — Norwegian 4×4), Tabata et al. (1996, MSSE — 20s/10s), Gibala et al. (McMaster Univ. — 60s/60s), Buchheit & Laursen (2013, 2022 — HIIT Science), & San-Millán & Brooks (2018) — pairing easy Zone-2 aerobic work with 1–3 weekly HIIT/VO2 sessions for peak heart longevity.',
   },
   {
     topic: 'Joint Mobility, Neck/Spine & Foot Core Stability',

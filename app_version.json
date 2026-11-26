@@ -1,6 +1,6 @@
 {
-  "version": "2.5",
-  "buildNumber": 15,
-  "releasedAt": "2026-11-22",
-  "notes": "Prime v2.5: Single-button in-app APK auto-updater (Option A: download & install), live free Gemini model auto-discovery (/v1beta/models), fixed Kegel pause/resume, and intuitive vibrate-on-squeeze / still-on-relax eyes-free haptics."
+  "version": "2.6",
+  "buildNumber": 16,
+  "releasedAt": "2026-11-26",
+  "notes": "Prime v2.6: Research-Backed HIIT Timer inside Heart & Stamina (Tabata 20/10, Gibala 60/60, Norwegian 4x4, and Custom HIIT builder with Warm-Up/Cool-Down, per-preset benefit explanations, Audio Cue ON/OFF toggle, native haptics, and weekly frequency guard)."
 }

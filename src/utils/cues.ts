@@ -4,7 +4,7 @@ import type { CueStyle } from '../types/schemas';
 
 let audioCtx: AudioContext | null = null;
 
-function playBeep(frequency: number, durationMs: number): void {
+export function playBeep(frequency: number, durationMs: number): void {
   if (typeof window === 'undefined') return;
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctx) return;

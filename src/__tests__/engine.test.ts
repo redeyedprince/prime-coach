@@ -21,6 +21,7 @@ import {
   serializeBodyMetricsToCsv,
 } from '../engine/bodyMetrics';
 import { compareVersionStrings } from '../drive/driveSync';
+import { buildHiitIntervals, formatWorkRestRatio, HIIT_PRESETS } from '../engine/hiit';
 import {
   buildCalibratedProgramConfig,
   buildDefaultProgramConfigFromProfile,
@@ -248,6 +249,18 @@ describe('Exercise Catalog & Manifest Verification', () => {
       'gemini-3.8-flash',
       'gemini-2.0-flash',
     ]);
+
+    // Research-backed HIIT timer presets & ratio formatting
+    const tabata = buildHiitIntervals({
+      ...HIIT_PRESETS.tabata,
+      quietMode: true,
+    });
+    expect(tabata[0].kind).toBe('warmup');
+    expect(tabata[tabata.length - 1].kind).toBe('cooldown');
+    expect(tabata.filter((s) => s.kind === 'work')).toHaveLength(8);
+    expect(tabata.find((s) => s.kind === 'work')?.cue).toContain('silent');
+    expect(formatWorkRestRatio(20, 10)).toBe('2:1');
+    expect(formatWorkRestRatio(30, 60)).toBe('1:2');
 
     const noWeightFuel = computeDailyFuelTargets({ ...baseProfile, bodyweight_kg: null });
     expect(noWeightFuel.hasWeight).toBe(false);

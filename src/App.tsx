@@ -592,7 +592,7 @@ export function App() {
   };
 
   const handleLogCardioSession = async (
-    slug: 'zone2-cardio-session' | 'vo2max-interval-session',
+    slug: 'zone2-cardio-session' | 'vo2max-interval-session' | 'hiit-interval-session',
     durationSeconds: number,
     notes: string,
   ) => {
